@@ -5,8 +5,8 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 ## Milestone Status Overview
 
 - [x] **M0: Scaffold**
-- [ ] **M1: Data audit and cohort**
-- [ ] **M2: Leakage audit and splits**
+- [x] **M1: Data audit and cohort**
+- [x] **M2: Leakage audit and splits**
 - [ ] **M3: Features and baselines**
 - [ ] **M4: LR and XGBoost, imbalance ablation**
 - [ ] **M5: Calibration and thresholds**
@@ -19,20 +19,41 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 ---
 
 ## Checkpoint 0: M0 Scaffold Complete
+- **Status:** Complete.
+
+---
+
+## Checkpoint 1: M1 Data Audit & M2 Leakage Audit & Splits Complete
 - **What was built:**
-  - Python package structure under src/readmit with 
-eadmit v0.1.0 installed in editable mode.
-  - Complete configuration suite: configs/base.yaml, configs/features.yaml, configs/models.yaml.
-  - CLI dispatcher python -m readmit.cli supporting subcommands: data, eatures, 	rain, evaluate, explain, airness, inal, pp, pi.
-  - MLflow tracking wrapper in src/readmit/tracking.py initialized and tested.
-  - Makefile with targets matching all CLI commands.
-  - Test suite skeleton 	ests/test_scaffold.py verifying package version and config loading.
-  - Global cache policy configured to D:\Installs\Global Cache\pip (C: drive preserved).
+  - src/readmit/data.py: Automated download from UCI repository (ID 296), raw ingestion, cohort filtering logic, and stratified patient-grouped splitting.
+  - src/readmit/audit.py: Automated markdown report generators for data quality (
+eports/data_quality.md) and prediction-point clinical leakage audit (
+eports/leakage_audit.md).
+  - 
+eports/cohort_flow.md: Full attrition flow tracking raw encounters down to primary cohort with exact counts.
+  - data/splits/: Committed patient-ID JSON files (	rain_patients.json, al_patients.json, 	est_patients.json) guaranteeing 100% split determinism and zero patient overlap.
+  - data/processed/: Processed parquet splits (cohort.parquet, 	rain.parquet, al.parquet, 	est.parquet).
+  - Unit tests in 	ests/test_data.py: verified label mapping, hospice/expired exclusion, and zero patient overlap across splits.
+- **Key measured numbers:**
+  - Raw encounters: **101,766** across **71,518** unique patients (50 columns).
+  - Excluded expired/hospice (disposition IDs 11, 13, 14, 19, 20, 21): **2,423** encounters.
+  - Excluded invalid gender: **3** encounters.
+  - Excluded repeat encounters (kept index/first encounter by lowest encounter_id): **29,353** encounters.
+  - Final Primary Cohort: **69,987** patients/encounters.
+  - 30-day readmissions (
+eadmitted == '<30'): **6,285** cases.
+  - Cohort prevalence: **8.9802%** (~8.98%).
+  - Patient-grouped splits (70 / 15 / 15):
+    - Train: **48,990** patients (prevalence **8.98%**, 4,399 positives)
+    - Val: **10,497** patients (prevalence **8.97%**, 942 positives)
+    - Test: **10,500** patients (prevalence **8.99%**, 944 positives)
+    - Zero patient overlap across splits: **VERIFIED**.
 - **Commands run & results:**
+  - python -m readmit.cli data: Successfully generated cohort, audits, and splits.
   - 
 uff check src tests: Passed (0 errors).
-  - pytest -v: 2 passed in 0.10s.
-  - python -m readmit.cli --help: Cleanly displays all target subcommands.
+  - pytest -v: 5 passed in 0.83s.
 - **Assumptions made:**
-  - Python 3.13 virtual environment on F: with pinned dependencies in pyproject.toml.
-- **Open issues:** None. Ready for M1 (Data audit and cohort).
+  - Discharge disposition IDs 11, 13, 14, 19, 20, 21 represent mortality/hospice per data/raw/IDS_mapping.csv.
+  - Lowest encounter_id represents the patient index encounter (chronological proxy).
+- **Open issues:** None. Proceeding autonomously to M3 (Features and baselines).
