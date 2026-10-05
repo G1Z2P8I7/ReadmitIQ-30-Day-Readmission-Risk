@@ -12,7 +12,7 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 - [x] **M5: Calibration and thresholds**
 - [x] **M6: Explainability (SHAP & odds ratios)**
 - [x] **M7: Fairness audit and mitigation**
-- [ ] **M8: Final test evaluation (locked)**
+- [x] **M8: Final test evaluation (locked)**
 - [ ] **M9: Engineering layer (API, Dashboard, Docker)**
 - [ ] **M10: Write-up and executive report**
 
@@ -199,7 +199,44 @@ uff check src tests: Passed (0 errors).
 - **Assumptions made:**
   - Race and gender remain strictly excluded from model features and are evaluated purely as demographic audit attributes.
   - Groups with N < 500 (e.g., Asian N=80, Hispanic N=242, Other N=156 in validation split) are explicitly annotated with sample size warnings.
-- **Open issues:** None. Proceeding autonomously to M8 (Final Test Set Evaluation & Metrics Freezing).
+- **Open issues:** None.
+
+---
+
+## Checkpoint 7: M8 Final Test Set Evaluation & Metrics Freezing Complete
+- **What was built:**
+  - `src/readmit/final_eval.py`: Scored the untouched test set (N=10,500 patients, prevalence 8.99%) **strictly once** (Invariant 4).
+  - Paired 1,000-resample bootstrap 95% confidence intervals computed across all candidate models (Calibrated XGBoost, Calibrated Logistic Regression, Raw XGBoost).
+  - Test-set lock mechanism enforced via `artifacts/.final_done` with timestamp and git commit hash; CLI step `readmit.cli final` now refuses to re-run unless called with `--force`.
+  - Demographic fairness audit evaluated on the test set before and after Fairlearn mitigation.
+  - Frozen single source of truth report: `reports/metrics.json`.
+- **Key measured numbers (Test Set: N=10,500, Positives=944, Prevalence=8.99%):**
+  - **Primary Model: XGBoost Calibrated (Isotonic):**
+    - **PR-AUC:** **0.1385** [95% Bootstrap CI: **0.1268 - 0.1529**].
+    - **ROC-AUC:** **0.6344** [95% Bootstrap CI: **0.6168 - 0.6532**] (Leakage invariant preserved: ROC-AUC is well below the 0.80 ceiling).
+    - **Brier Score:** **0.0806** [95% Bootstrap CI: **0.0762 - 0.0848**].
+    - **Expected Calibration Error (ECE, 10 uniform bins):** **0.0062**.
+  - **Comparative Model: Logistic Regression Calibrated (Platt):**
+    - PR-AUC: **0.1351** [95% CI: 0.1232 - 0.1504], ROC-AUC: **0.6208** [95% CI: 0.6025 - 0.6388], Brier: **0.0808**, ECE: **0.0086**.
+  - **Comparative Model: Raw XGBoost (Uncalibrated):**
+    - PR-AUC: **0.1456** [95% CI: 0.1330 - 0.1623], ROC-AUC: **0.6378** [95% CI: 0.6198 - 0.6562], Brier: **0.0802**, ECE: **0.0035**.
+  - **Capacity-Based Prioritization on Test Set (Calibrated XGBoost):**
+    - **Top 5%:** Flagged = 525, Captured = 101, Recall = **10.70%**, Precision = **19.24%**, Lift = **2.14x**.
+    - **Top 10%:** Flagged = 1,050, Captured = 189, Recall = **20.02%**, Precision = **18.00%**, Lift = **2.00x**.
+    - **Top 20% (Primary Capacity Assumption):** Flagged = 2,100, Captured = 326, Recall = **34.53%**, Precision = **15.52%**, Lift = **1.73x**.
+  - **Fairness Mitigation on Test Set (Equalized Odds vs Unmitigated):**
+    - Unmitigated Race FPR Disparity Gap: **5.07%** (African American 21.32% vs Caucasian 26.40%).
+    - Mitigated Race FPR Disparity Gap: **0.17%** (African American 23.36% vs Caucasian 23.53%).
+    - Disparity reduction: **96.6% reduction in false alarm rate gap** across racial groups on the test set.
+- **Commands run & results:**
+  - `python -m readmit.cli final`: Completed successfully. Created `artifacts/.final_done` and `reports/metrics.json`.
+  - Second execution check: Correctly aborted with error `Test set evaluation already executed and locked`.
+  - `ruff check src tests`: Passed (0 errors).
+  - `pytest -v`: 13 passed in 2.35s.
+- **Assumptions made:**
+  - Test set was evaluated strictly once with models and thresholds frozen from validation.
+- **Open issues:** None. Proceeding autonomously to M9 (Engineering Layer: Inference Engine, FastAPI Service, Streamlit App, and Dockerfile).
+
 
 
 
