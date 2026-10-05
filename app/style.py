@@ -1,420 +1,577 @@
-"""ReadmitIQ Dashboard Theme & Styling System.
+"""ReadmitIQ Theme & Styling System — Function Health Aesthetic.
 
-Provides CSS injection, styled HTML metric cards, and helper functions
-for the dark-mode glassmorphism clinical dashboard design.
+Provides CSS injection and HTML component generators inspired by Function Health's
+editorial luxury healthcare design: warm alabaster canvas, terracotta accents,
+editorial serif headings with italicized emphasis, and warm sand cards.
 """
 
 # ---------------------------------------------------------------------------
 # Color palette constants
 # ---------------------------------------------------------------------------
-PRIMARY_DARK = "#0B1B3F"
-CARD_BG = "rgba(255, 255, 255, 0.05)"
-CARD_BORDER = "rgba(255, 255, 255, 0.08)"
-ACCENT_TEAL = "#00D4AA"
-ACCENT_CORAL = "#FF6B6B"
-ACCENT_GOLD = "#FFB800"
-ACCENT_BLUE = "#4DA8FF"
-TEXT_WHITE = "#F0F2F6"
-TEXT_MUTED = "#8892B0"
-SURFACE_LIGHT = "#112240"
+CANVAS_BG = "#FAF8F5"  # Warm Alabaster / Cream
+CARD_BG = "#F3EFE6"  # Soft Sand / Oat
+CARD_BORDER = "#E5DFD3"  # Warm Stone Border
+CARD_HOVER_BORDER = "#D6CDBC"
+
+TEXT_PRIMARY = "#1A1715"  # Deep Espresso Charcoal
+TEXT_SECONDARY = "#5C564F"  # Muted Taupe Charcoal
+TEXT_MUTED = "#8A8276"  # Soft Warm Taupe
+
+ACCENT_TERRACOTTA = "#A84B29"  # Function Brand Burnt Sienna
+ACCENT_TERRACOTTA_LIGHT = "#F2E8E3"
+ACCENT_TERRACOTTA_HOVER = "#8E3D20"
+
+ACCENT_SAGE = "#3B6E53"  # In-Range / Favorable Green
+ACCENT_SAGE_LIGHT = "#E9F1EC"
+
+ACCENT_AMBER = "#C07D2B"  # Moderate / Advisory Gold
+ACCENT_AMBER_LIGHT = "#FBF4E8"
+
+ACCENT_ROSE = "#B84033"  # High Risk Alert Red
+ACCENT_ROSE_LIGHT = "#FCEEEB"
 
 
 def inject_css() -> str:
-    """Return the full CSS stylesheet for the dark glassmorphism theme."""
+    """Return the full CSS stylesheet for the Function Health aesthetic."""
     return f"""
 <style>
-/* ── Global Overrides ─────────────────────────────────── */
-.stApp {{
-    background: linear-gradient(135deg, {PRIMARY_DARK} 0%, #0a192f 50%, #0d2137 100%);
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ── Global Canvas ────────────────────────────────────────── */
+html, body, [class*="st-emotion"], .stApp {{
+    background-color: {CANVAS_BG} !important;
+    color: {TEXT_PRIMARY} !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }}
 
-/* Sidebar */
+/* ── Typography ───────────────────────────────────────────── */
+h1, h2, h3, h4, .fh-editorial {{
+    font-family: 'Newsreader', Georgia, serif !important;
+    font-weight: 500 !important;
+    color: {TEXT_PRIMARY} !important;
+    letter-spacing: -0.02em !important;
+}}
+
+.fh-italic {{
+    font-family: 'Newsreader', Georgia, serif !important;
+    font-style: italic !important;
+    font-weight: 400 !important;
+    color: {ACCENT_TERRACOTTA} !important;
+}}
+
+/* ── Streamlit Top Header & Toolbar ──────────────────────── */
+header[data-testid="stHeader"] {{
+    background: transparent !important;
+}}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
 section[data-testid="stSidebar"] {{
-    background: linear-gradient(180deg, #0a1628 0%, #0d1f3c 100%) !important;
-    border-right: 1px solid {CARD_BORDER};
+    background-color: #F5F1E8 !important;
+    border-right: 1px solid {CARD_BORDER} !important;
 }}
 section[data-testid="stSidebar"] .stMarkdown p,
 section[data-testid="stSidebar"] .stMarkdown li {{
-    color: {TEXT_MUTED} !important;
-    font-size: 0.88rem;
+    color: {TEXT_SECONDARY} !important;
+    font-size: 0.88rem !important;
 }}
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 {{
-    color: {TEXT_WHITE} !important;
+    color: {TEXT_PRIMARY} !important;
 }}
 
-/* Radio / navigation pills */
-div[data-testid="stRadio"] label {{
-    color: {TEXT_MUTED} !important;
-    transition: color 0.2s;
+/* Radio navigation */
+div[data-testid="stRadio"] {{
+    background: transparent;
 }}
-div[data-testid="stRadio"] label:hover {{
-    color: {ACCENT_TEAL} !important;
+div[data-testid="stRadio"] > label {{
+    font-family: 'Newsreader', Georgia, serif !important;
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    color: {TEXT_PRIMARY} !important;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label {{
+    background: #FAF8F5 !important;
+    border: 1px solid {CARD_BORDER} !important;
+    border-radius: 9999px !important;
+    padding: 0.5rem 1rem !important;
+    margin-bottom: 0.4rem !important;
+    transition: all 0.2s ease !important;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label:hover {{
+    border-color: {ACCENT_TERRACOTTA} !important;
+    background: {ACCENT_TERRACOTTA_LIGHT} !important;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label[data-checked="true"] {{
+    background: {ACCENT_TERRACOTTA} !important;
+    border-color: {ACCENT_TERRACOTTA} !important;
+}}
+div[data-testid="stRadio"] div[role="radiogroup"] label[data-checked="true"] p {{
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
 }}
 
-/* ── Glass Card ───────────────────────────────────────── */
-.glass-card {{
-    background: {CARD_BG};
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid {CARD_BORDER};
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}}
-.glass-card:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0, 212, 170, 0.10);
-}}
-
-/* ── Metric Card ──────────────────────────────────────── */
-.metric-card {{
-    background: {CARD_BG};
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid {CARD_BORDER};
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
+/* ── Hero Section ─────────────────────────────────────────── */
+.fh-hero {{
     text-align: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 2.5rem 1rem 2rem 1rem;
+    max-width: 960px;
+    margin: 0 auto 1.5rem auto;
 }}
-.metric-card:hover {{
-    transform: translateY(-3px);
-    box-shadow: 0 8px 32px rgba(0, 212, 170, 0.12);
+.fh-hero-title {{
+    font-family: 'Newsreader', Georgia, serif !important;
+    font-size: 3.2rem !important;
+    font-weight: 500 !important;
+    color: {TEXT_PRIMARY} !important;
+    line-height: 1.15 !important;
+    margin-bottom: 0.75rem !important;
+    letter-spacing: -0.025em !important;
 }}
-.metric-icon {{
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+.fh-hero-sub {{
+    font-size: 1.12rem !important;
+    color: {TEXT_SECONDARY} !important;
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.65 !important;
+    font-weight: 400 !important;
+}}
+
+/* ── Section Titles ───────────────────────────────────────── */
+.fh-section-title {{
+    font-family: 'Newsreader', Georgia, serif !important;
+    font-size: 2.1rem !important;
+    font-weight: 500 !important;
+    color: {TEXT_PRIMARY} !important;
+    line-height: 1.25 !important;
+    margin-bottom: 0.35rem !important;
+    letter-spacing: -0.02em !important;
+}}
+.fh-section-sub {{
+    font-size: 0.95rem !important;
+    color: {TEXT_MUTED} !important;
+    margin-bottom: 1.25rem !important;
+    line-height: 1.5 !important;
+}}
+
+/* ── Metric Cards ─────────────────────────────────────────── */
+.fh-metric-card {{
+    background: {CARD_BG};
+    border: 1px solid {CARD_BORDER};
+    border-radius: 20px;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    height: 100%;
+}}
+.fh-metric-card:hover {{
+    transform: translateY(-2px);
+    border-color: {CARD_HOVER_BORDER};
+    box-shadow: 0 8px 24px rgba(26, 23, 21, 0.04);
+}}
+.fh-metric-icon {{
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     margin-bottom: 0.75rem;
+    background: #FAF8F5;
+    border: 1px solid {CARD_BORDER};
 }}
-.metric-value {{
-    font-size: 2rem;
+.fh-metric-val {{
+    font-size: 2.25rem;
     font-weight: 800;
-    color: {TEXT_WHITE};
-    line-height: 1.2;
-    margin-bottom: 0.25rem;
-}}
-.metric-label {{
-    font-size: 0.85rem;
-    color: {TEXT_MUTED};
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}}
-.metric-delta {{
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-top: 0.35rem;
-}}
-.delta-positive {{ color: {ACCENT_TEAL}; }}
-.delta-negative {{ color: {ACCENT_CORAL}; }}
-.delta-neutral {{ color: {ACCENT_GOLD}; }}
-
-/* ── Hero Section ─────────────────────────────────────── */
-.hero-title {{
-    font-size: 2.6rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, {TEXT_WHITE} 0%, {ACCENT_TEAL} 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.5rem;
+    color: {TEXT_PRIMARY};
     line-height: 1.15;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.02em;
 }}
-.hero-subtitle {{
-    font-size: 1.1rem;
+.fh-metric-lbl {{
+    font-size: 0.78rem;
     color: {TEXT_MUTED};
-    font-weight: 400;
-    max-width: 720px;
-    line-height: 1.6;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}}
+.fh-metric-badge {{
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}}
+.fh-badge-pos {{
+    background: {ACCENT_SAGE_LIGHT};
+    color: {ACCENT_SAGE};
+}}
+.fh-badge-terra {{
+    background: {ACCENT_TERRACOTTA_LIGHT};
+    color: {ACCENT_TERRACOTTA};
+}}
+.fh-badge-amber {{
+    background: {ACCENT_AMBER_LIGHT};
+    color: {ACCENT_AMBER};
 }}
 
-/* ── Section Headers ──────────────────────────────────── */
-.section-header {{
-    font-size: 1.5rem;
+/* ── Step Cards (01, 02, 03 from Function Health) ────────── */
+.fh-step-card {{
+    background: {CARD_BG};
+    border: 1px solid {CARD_BORDER};
+    border-radius: 22px;
+    padding: 1.75rem 1.5rem;
+    height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}}
+.fh-step-card:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26, 23, 21, 0.04);
+}}
+.fh-step-num {{
+    font-size: 0.9rem;
     font-weight: 700;
-    color: {TEXT_WHITE};
-    margin-bottom: 0.25rem;
+    color: {ACCENT_TERRACOTTA};
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+}}
+.fh-step-title {{
+    font-family: 'Newsreader', Georgia, serif !important;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    color: {TEXT_PRIMARY} !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.25 !important;
+}}
+.fh-step-sub {{
+    font-size: 0.88rem;
+    color: {TEXT_MUTED};
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}}
+.fh-step-item {{
+    background: #FAF8F5;
+    border: 1px solid {CARD_BORDER};
+    border-radius: 12px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.85rem;
+    color: {TEXT_PRIMARY};
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }}
-.section-sub {{
-    font-size: 0.9rem;
-    color: {TEXT_MUTED};
+
+/* ── Warm Banners ─────────────────────────────────────────── */
+.fh-banner {{
+    border-radius: 16px;
+    padding: 1.1rem 1.35rem;
     margin-bottom: 1.25rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}}
+.fh-banner-terra {{
+    background: {ACCENT_TERRACOTTA_LIGHT};
+    border: 1px solid rgba(168, 75, 41, 0.2);
+    color: #5A2310;
+}}
+.fh-banner-terra strong {{
+    color: {ACCENT_TERRACOTTA};
+}}
+.fh-banner-amber {{
+    background: {ACCENT_AMBER_LIGHT};
+    border: 1px solid rgba(192, 125, 43, 0.2);
+    color: #613B0E;
+}}
+.fh-banner-amber strong {{
+    color: {ACCENT_AMBER};
+}}
+.fh-banner-sage {{
+    background: {ACCENT_SAGE_LIGHT};
+    border: 1px solid rgba(59, 110, 83, 0.2);
+    color: #1A3E2C;
+}}
+.fh-banner-sage strong {{
+    color: {ACCENT_SAGE};
+}}
+.fh-banner-rose {{
+    background: {ACCENT_ROSE_LIGHT};
+    border: 1px solid rgba(184, 64, 51, 0.2);
+    color: #611812;
+}}
+.fh-banner-rose strong {{
+    color: {ACCENT_ROSE};
 }}
 
-/* ── Gradient Divider ─────────────────────────────────── */
-.gradient-divider {{
-    height: 2px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        {ACCENT_TEAL}40 20%,
-        {ACCENT_TEAL}80 50%,
-        {ACCENT_TEAL}40 80%,
-        transparent 100%
-    );
-    border: none;
+/* ── Result Gauge Card (Function Test Style) ──────────────── */
+.fh-result-container {{
+    background: {CARD_BG};
+    border: 1px solid {CARD_BORDER};
+    border-radius: 24px;
+    padding: 2rem;
     margin: 1.5rem 0;
 }}
-
-/* ── Safeguard / Feature Cards ────────────────────────── */
-.safeguard-card {{
-    background: {CARD_BG};
-    backdrop-filter: blur(12px);
-    border: 1px solid {CARD_BORDER};
-    border-radius: 14px;
-    padding: 1.25rem;
+.fh-gauge-track {{
+    background: #E5DFD3;
+    height: 10px;
+    border-radius: 9999px;
+    position: relative;
+    margin: 1.5rem 0 1rem 0;
+}}
+.fh-gauge-zone-normal {{
+    position: absolute;
+    left: 0;
+    width: 20%;
     height: 100%;
+    background: {ACCENT_SAGE};
+    border-radius: 9999px 0 0 9999px;
+    opacity: 0.7;
 }}
-.safeguard-card h4 {{
-    color: {ACCENT_TEAL};
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
-}}
-.safeguard-card p, .safeguard-card li {{
-    color: {TEXT_MUTED};
-    font-size: 0.88rem;
-    line-height: 1.6;
-}}
-
-/* ── Risk Band Badges ─────────────────────────────────── */
-.risk-badge {{
-    display: inline-block;
-    padding: 0.4rem 1.2rem;
-    border-radius: 24px;
-    font-weight: 700;
-    font-size: 1rem;
-    letter-spacing: 0.5px;
-}}
-.risk-high {{
-    background: rgba(255, 107, 107, 0.15);
-    color: {ACCENT_CORAL};
-    border: 1px solid rgba(255, 107, 107, 0.3);
-}}
-.risk-moderate {{
-    background: rgba(255, 184, 0, 0.15);
-    color: {ACCENT_GOLD};
-    border: 1px solid rgba(255, 184, 0, 0.3);
-}}
-.risk-low {{
-    background: rgba(0, 212, 170, 0.15);
-    color: {ACCENT_TEAL};
-    border: 1px solid rgba(0, 212, 170, 0.3);
+.fh-gauge-zone-elevated {{
+    position: absolute;
+    left: 20%;
+    right: 0;
+    height: 100%;
+    background: {ACCENT_TERRACOTTA};
+    border-radius: 0 9999px 9999px 0;
+    opacity: 0.7;
 }}
 
-/* ── Alert / Info Banners ─────────────────────────────── */
-.info-banner {{
-    background: rgba(77, 168, 255, 0.08);
-    border: 1px solid rgba(77, 168, 255, 0.2);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    color: {TEXT_MUTED};
-    font-size: 0.9rem;
-    line-height: 1.6;
+/* ── Form Inputs Override ─────────────────────────────────── */
+.stForm {{
+    background: {CARD_BG} !important;
+    border: 1px solid {CARD_BORDER} !important;
+    border-radius: 24px !important;
+    padding: 2rem !important;
 }}
-.info-banner strong {{
-    color: {ACCENT_BLUE};
+.stSelectbox div[data-baseweb="select"] > div,
+.stNumberInput div[data-baseweb="input"] > div,
+.stTextInput div[data-baseweb="input"] > div {{
+    background-color: #FAF8F5 !important;
+    border-color: {CARD_BORDER} !important;
+    border-radius: 12px !important;
+    color: {TEXT_PRIMARY} !important;
 }}
-.warning-banner {{
-    background: rgba(255, 184, 0, 0.08);
-    border: 1px solid rgba(255, 184, 0, 0.2);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    color: {TEXT_MUTED};
-    font-size: 0.9rem;
-    line-height: 1.6;
-}}
-.warning-banner strong {{
-    color: {ACCENT_GOLD};
-}}
-.danger-banner {{
-    background: rgba(255, 107, 107, 0.08);
-    border: 1px solid rgba(255, 107, 107, 0.2);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    color: {TEXT_MUTED};
-    font-size: 0.9rem;
-    line-height: 1.6;
-}}
-.danger-banner strong {{
-    color: {ACCENT_CORAL};
-}}
-.success-banner {{
-    background: rgba(0, 212, 170, 0.08);
-    border: 1px solid rgba(0, 212, 170, 0.2);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    color: {TEXT_MUTED};
-    font-size: 0.9rem;
-    line-height: 1.6;
-}}
-.success-banner strong {{
-    color: {ACCENT_TEAL};
+.stSlider {{
+    padding: 0.5rem 0 !important;
 }}
 
-/* ── Streamlit dataframe override ─────────────────────── */
-.stDataFrame {{
-    border-radius: 12px;
-    overflow: hidden;
+/* Form submit button pill */
+button[kind="primaryFormSubmit"],
+.stButton > button {{
+    background-color: {ACCENT_TERRACOTTA} !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    padding: 0.65rem 1.8rem !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.02em !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(168, 75, 41, 0.25) !important;
+}}
+button[kind="primaryFormSubmit"]:hover,
+.stButton > button:hover {{
+    background-color: {ACCENT_TERRACOTTA_HOVER} !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(168, 75, 41, 0.35) !important;
 }}
 
-/* ── Tabs styling ─────────────────────────────────────── */
+/* ── Tabs Override ────────────────────────────────────────── */
 .stTabs [data-baseweb="tab-list"] {{
-    gap: 8px;
-    background: transparent;
+    gap: 8px !important;
+    background: transparent !important;
+    border-bottom: 1px solid {CARD_BORDER} !important;
+    padding-bottom: 0.5rem !important;
 }}
 .stTabs [data-baseweb="tab"] {{
-    background: {CARD_BG};
-    border-radius: 10px;
-    border: 1px solid {CARD_BORDER};
-    color: {TEXT_MUTED};
-    padding: 0.5rem 1rem;
+    background: transparent !important;
+    border-radius: 9999px !important;
+    border: 1px solid transparent !important;
+    color: {TEXT_MUTED} !important;
+    padding: 0.5rem 1.25rem !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+}}
+.stTabs [data-baseweb="tab"]:hover {{
+    color: {TEXT_PRIMARY} !important;
+    background: {CARD_BG} !important;
 }}
 .stTabs [aria-selected="true"] {{
-    background: rgba(0, 212, 170, 0.12) !important;
-    border-color: {ACCENT_TEAL} !important;
-    color: {ACCENT_TEAL} !important;
+    background: {ACCENT_TERRACOTTA_LIGHT} !important;
+    border-color: rgba(168, 75, 41, 0.3) !important;
+    color: {ACCENT_TERRACOTTA} !important;
+    font-weight: 600 !important;
 }}
 
-/* ── Form styling ─────────────────────────────────────── */
-.stForm {{
-    background: {CARD_BG};
-    border: 1px solid {CARD_BORDER};
-    border-radius: 16px;
-    padding: 1.5rem;
+/* ── Dataframes ───────────────────────────────────────────── */
+.stDataFrame {{
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    border: 1px solid {CARD_BORDER} !important;
 }}
 
-/* ── Image containers ─────────────────────────────────── */
+/* ── Warm Divider ─────────────────────────────────────────── */
+.fh-divider {{
+    height: 1px;
+    background: {CARD_BORDER};
+    border: none;
+    margin: 2rem 0;
+}}
+
+/* ── Image Frames ─────────────────────────────────────────── */
 .stImage {{
-    border-radius: 12px;
-    overflow: hidden;
-}}
-
-/* ── Primary model highlight row ──────────────────────── */
-.primary-model-tag {{
-    background: rgba(0, 212, 170, 0.15);
-    color: {ACCENT_TEAL};
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    border: 1px solid {CARD_BORDER} !important;
+    background: #FFFFFF !important;
+    padding: 0.5rem !important;
 }}
 </style>
 """
 
 
 # ---------------------------------------------------------------------------
-# HTML component helpers
+# HTML Component Generators
 # ---------------------------------------------------------------------------
+
+
+def hero_section(main_title: str, italic_part: str, subtitle: str) -> str:
+    """Return Function Health style editorial hero header."""
+    return f"""
+    <div class="fh-hero">
+        <h1 class="fh-hero-title">{main_title} <span class="fh-italic">{italic_part}</span></h1>
+        <p class="fh-hero-sub">{subtitle}</p>
+    </div>
+    """
+
+
+def editorial_header(main_title: str, italic_part: str, subtitle: str = "") -> str:
+    """Return an editorial section header."""
+    sub_html = f'<div class="fh-section-sub">{subtitle}</div>' if subtitle else ""
+    return f"""
+    <div style="margin-bottom: 1.25rem;">
+        <h2 class="fh-section-title">{main_title} <span class="fh-italic">{italic_part}</span></h2>
+        {sub_html}
+    </div>
+    """
 
 
 def metric_card(
     icon: str,
     value: str,
     label: str,
-    color: str = ACCENT_TEAL,
     delta: str = "",
-    delta_type: str = "positive",
+    delta_type: str = "pos",
+    subtext: str = "",
 ) -> str:
-    """Return HTML for a styled glassmorphism metric card."""
-    delta_html = ""
+    """Return a warm sand Function Health metric card."""
+    badge_html = ""
     if delta:
-        css_class = {
-            "positive": "delta-positive",
-            "negative": "delta-negative",
-            "neutral": "delta-neutral",
-        }.get(delta_type, "delta-neutral")
-        delta_html = f'<div class="metric-delta {css_class}">{delta}</div>'
+        badge_class = {
+            "pos": "fh-badge-pos",
+            "terra": "fh-badge-terra",
+            "amber": "fh-badge-amber",
+        }.get(delta_type, "fh-badge-pos")
+        badge_html = f'<div class="fh-metric-badge {badge_class}">{delta}</div>'
+
+    sub_html = (
+        f'<div style="font-size:0.75rem; color:{TEXT_MUTED}; margin-top:0.3rem;">{subtext}</div>'
+        if subtext
+        else ""
+    )
 
     return f"""
-    <div class="metric-card">
-        <div class="metric-icon" style="background: {color}20; color: {color};">
-            {icon}
+    <div class="fh-metric-card">
+        <div class="fh-metric-icon">{icon}</div>
+        <div class="fh-metric-val">{value}</div>
+        <div class="fh-metric-lbl">{label}</div>
+        {badge_html}
+        {sub_html}
+    </div>
+    """
+
+
+def step_card(
+    number_str: str, title: str, italic_word: str, subtitle: str, bullets: list[str]
+) -> str:
+    """Return a Function Health 01/02/03 step card."""
+    items = "".join(
+        f'<div class="fh-step-item"><span>✓</span> <span>{b}</span></div>' for b in bullets
+    )
+    return f"""
+    <div class="fh-step-card">
+        <div class="fh-step-num">{number_str}</div>
+        <div class="fh-step-title">{title} <span class="fh-italic">{italic_word}</span></div>
+        <div class="fh-step-sub">{subtitle}</div>
+        <div>{items}</div>
+    </div>
+    """
+
+
+def risk_gauge_card(
+    prob_pct: float,
+    mult: float,
+    band: str,
+    cutoff_pct: float = 10.77,
+) -> str:
+    """Return Function Health test result format with visual in-range / elevated gauge."""
+    is_elevated = prob_pct >= cutoff_pct
+    status_label = "Elevated Risk (Top 20% Capacity)" if is_elevated else "Standard Discharge Risk"
+    status_class = "fh-badge-terra" if is_elevated else "fh-badge-pos"
+    marker_pos = min(max(prob_pct / 30.0 * 100.0, 5.0), 95.0)
+
+    marker_color = ACCENT_TERRACOTTA if is_elevated else ACCENT_SAGE
+
+    return f"""
+    <div class="fh-result-container">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+                <div style="font-size:0.8rem; font-weight:700; color:{TEXT_MUTED}; text-transform:uppercase; letter-spacing:0.08em;">
+                    Readmission Risk Assessment
+                </div>
+                <div style="font-family:'Newsreader', Georgia, serif; font-size:2.8rem; font-weight:500; color:{TEXT_PRIMARY}; line-height:1.1; margin:0.3rem 0;">
+                    {prob_pct:.1f}% <span style="font-family:'Plus Jakarta Sans', sans-serif; font-size:1.1rem; font-weight:600; color:{TEXT_SECONDARY};">({mult:.2f}× hospital baseline)</span>
+                </div>
+            </div>
+            <div>
+                <span class="fh-metric-badge {status_class}" style="font-size:0.88rem; padding:0.4rem 1rem;">
+                    {band} · {status_label}
+                </span>
+            </div>
         </div>
-        <div class="metric-value">{value}</div>
-        <div class="metric-label">{label}</div>
-        {delta_html}
+
+        <div class="fh-gauge-track">
+            <div class="fh-gauge-zone-normal"></div>
+            <div class="fh-gauge-zone-elevated"></div>
+            <div style="position:absolute; left:calc({marker_pos}% - 7px); top:-4px; width:18px; height:18px; border-radius:50%; background:{marker_color}; border:3px solid #FFFFFF; box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:{TEXT_MUTED}; font-weight:600; text-transform:uppercase;">
+            <span>Standard Care (< 10.8%)</span>
+            <span style="color:{ACCENT_TERRACOTTA};">Top 20% Capacity Tier (≥ 10.8%)</span>
+        </div>
     </div>
     """
 
 
-def hero_section(title: str, subtitle: str) -> str:
-    """Return HTML for the hero section with gradient title."""
-    return f"""
-    <div style="margin-bottom: 2rem;">
-        <div class="hero-title">{title}</div>
-        <div class="hero-subtitle">{subtitle}</div>
-    </div>
-    """
+def info_banner(text: str) -> str:
+    return f'<div class="fh-banner fh-banner-terra">{text}</div>'
 
 
-def section_header(icon: str, title: str, subtitle: str = "") -> str:
-    """Return HTML for a styled section header."""
-    sub_html = f'<div class="section-sub">{subtitle}</div>' if subtitle else ""
-    return f"""
-    <div class="section-header">{icon} {title}</div>
-    {sub_html}
-    """
+def warning_banner(text: str) -> str:
+    return f'<div class="fh-banner fh-banner-amber">{text}</div>'
 
 
-def gradient_divider() -> str:
-    """Return HTML for a gradient divider line."""
-    return '<div class="gradient-divider"></div>'
+def success_banner(text: str) -> str:
+    return f'<div class="fh-banner fh-banner-sage">{text}</div>'
 
 
-def glass_card(content: str) -> str:
-    """Wrap content in a glass-card container."""
-    return f'<div class="glass-card">{content}</div>'
+def danger_banner(text: str) -> str:
+    return f'<div class="fh-banner fh-banner-rose">{text}</div>'
 
 
-def safeguard_card(icon: str, title: str, bullets: list[str]) -> str:
-    """Return HTML for a safeguard/feature card with icon and bullet points."""
-    items = "".join(f"<li>{b}</li>" for b in bullets)
-    return f"""
-    <div class="safeguard-card">
-        <h4>{icon} {title}</h4>
-        <ul style="padding-left: 1.2rem; margin: 0;">{items}</ul>
-    </div>
-    """
-
-
-def risk_badge(band: str) -> str:
-    """Return HTML for a colored risk band badge."""
-    band_lower = band.lower()
-    if "high" in band_lower:
-        css = "risk-high"
-    elif "moderate" in band_lower or "medium" in band_lower:
-        css = "risk-moderate"
-    else:
-        css = "risk-low"
-    return f'<span class="risk-badge {css}">{band}</span>'
-
-
-def info_banner(content: str) -> str:
-    """Return HTML for a blue info banner."""
-    return f'<div class="info-banner">{content}</div>'
-
-
-def warning_banner(content: str) -> str:
-    """Return HTML for a gold warning banner."""
-    return f'<div class="warning-banner">{content}</div>'
-
-
-def danger_banner(content: str) -> str:
-    """Return HTML for a coral danger banner."""
-    return f'<div class="danger-banner">{content}</div>'
-
-
-def success_banner(content: str) -> str:
-    """Return HTML for a teal success banner."""
-    return f'<div class="success-banner">{content}</div>'
+def divider() -> str:
+    return '<hr class="fh-divider"/>'
