@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def start_run(run_name: str | None = None, experiment_name: str = "ReadmitIQ"):
     if HAS_MLFLOW:
         try:
-            mlflow.set_tracking_uri("file:./mlruns")
+            mlflow.set_tracking_uri("sqlite:///mlflow.db")
             mlflow.set_experiment(experiment_name)
             with mlflow.start_run(run_name=run_name) as run:
                 yield run

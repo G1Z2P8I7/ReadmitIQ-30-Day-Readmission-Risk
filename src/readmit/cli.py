@@ -22,8 +22,9 @@ def cmd_features(args):
     return run_features_step(args)
 
 def cmd_train(args):
-    from readmit.models import run_train_step
-    return run_train_step(args)
+    from readmit.models import run_training_step
+    run_training_step()
+    return 0
 
 def cmd_evaluate(args):
     from readmit.evaluation import run_evaluate_step
