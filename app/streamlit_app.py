@@ -18,14 +18,20 @@ import streamlit as st
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 
 from style import (
+    case_card_header,
     danger_banner,
     divider,
     editorial_header,
+    form_section_header,
+    governance_card,
     hero_section,
     info_banner,
     inject_css,
     metric_card,
+    rationale_card,
     risk_gauge_card,
+    sidebar_brand,
+    sidebar_section_label,
     step_card,
     success_banner,
     warning_banner,
@@ -72,30 +78,10 @@ metrics_data = get_cached_metrics()
 fairness_details = get_cached_fairness_details()
 
 # ── Sidebar Branding & Assumptions ───────────────────────
-st.sidebar.markdown(
-    """
-    <div style="padding: 1.25rem 0.5rem 1rem 0.5rem;">
-        <div style="font-family:'Newsreader', Georgia, serif; font-size:1.85rem; font-weight:500; color:#1A1715; letter-spacing:-0.02em;">
-            Readmit<span style="font-style:italic; color:#A84B29;">IQ</span>
-        </div>
-        <div style="font-size:0.8rem; color:#706A63; margin-top:0.2rem;">
-            Clinical Decision Support &amp; Capacity Prioritization
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
+st.sidebar.markdown(sidebar_brand(), unsafe_allow_html=True)
 st.sidebar.markdown(divider(), unsafe_allow_html=True)
 
-st.sidebar.markdown(
-    """
-    <div style="font-size:0.75rem; font-weight:700; color:#8A8276; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.5rem;">
-        Operational Framework
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.sidebar.markdown(sidebar_section_label("Operational Framework"), unsafe_allow_html=True)
 st.sidebar.markdown(
     "- **Decision Point:** Hospital Discharge\n"
     "- **Capacity Tier:** Top 20% Flagged\n"
@@ -105,14 +91,7 @@ st.sidebar.markdown(
 
 st.sidebar.markdown(divider(), unsafe_allow_html=True)
 
-st.sidebar.markdown(
-    """
-    <div style="font-size:0.75rem; font-weight:700; color:#8A8276; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.5rem;">
-        Governance &amp; Safeguards
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.sidebar.markdown(sidebar_section_label("Governance & Safeguards"), unsafe_allow_html=True)
 st.sidebar.markdown(
     "- Non-causal risk prioritization\n"
     "- Race & gender excluded from features\n"
@@ -289,14 +268,7 @@ elif page == "Patient Risk Scoring":
     with st.form("patient_form"):
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown(
-                """
-                <div style="font-family:'Newsreader', Georgia, serif; font-size:1.3rem; font-weight:500; color:#1A1715; margin-bottom:0.75rem;">
-                    Stay &amp; Disposition
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            st.markdown(form_section_header("Stay & Disposition"), unsafe_allow_html=True)
             adm_type = st.selectbox(
                 "Admission Type",
                 [1, 2, 3, 7],
@@ -342,12 +314,7 @@ elif page == "Patient Risk Scoring":
 
         with col2:
             st.markdown(
-                """
-                <div style="font-family:'Newsreader', Georgia, serif; font-size:1.3rem; font-weight:500; color:#1A1715; margin-bottom:0.75rem;">
-                    Prior Utilization &amp; Demographics
-                </div>
-                """,
-                unsafe_allow_html=True,
+                form_section_header("Prior Utilization & Demographics"), unsafe_allow_html=True
             )
             age = st.selectbox(
                 "Age Decade",
@@ -376,12 +343,7 @@ elif page == "Patient Risk Scoring":
 
         with col3:
             st.markdown(
-                """
-                <div style="font-family:'Newsreader', Georgia, serif; font-size:1.3rem; font-weight:500; color:#1A1715; margin-bottom:0.75rem;">
-                    Clinical &amp; Diabetes Management
-                </div>
-                """,
-                unsafe_allow_html=True,
+                form_section_header("Clinical & Diabetes Management"), unsafe_allow_html=True
             )
             num_meds = st.slider("Medications Administered", 1, 50, 14)
             num_labs = st.slider("Lab Procedures", 1, 100, 42)
@@ -562,19 +524,7 @@ elif page == "SHAP Interpretability":
         ]
         for col, (label, fname, subtitle) in zip([c1, c2, c3], cases):
             with col:
-                st.markdown(
-                    f"""
-                    <div style="background:#F3EFE6; border:1px solid #E5DFD3; border-radius:18px; padding:1.2rem; margin-bottom:1rem;">
-                        <div style="font-family:'Newsreader', Georgia, serif; font-size:1.3rem; font-weight:500; color:#1A1715;">
-                            {label}
-                        </div>
-                        <div style="font-size:0.8rem; color:#706A63; margin-top:0.15rem;">
-                            {subtitle}
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                st.markdown(case_card_header(label, subtitle), unsafe_allow_html=True)
                 img_path = pathlib.Path(f"reports/figures/{fname}")
                 if img_path.exists():
                     st.image(str(img_path), use_container_width=True)
@@ -808,22 +758,7 @@ elif page == "Fairness by Group":
         st.dataframe(pd.DataFrame(gaps_table), use_container_width=True, hide_index=True)
 
     with fairness_tabs[2]:
-        st.markdown(
-            """
-            <div style="background:#F3EFE6; border:1px solid #E5DFD3; border-radius:20px; padding:1.75rem;">
-                <div style="font-family:'Newsreader', Georgia, serif; font-size:1.5rem; font-weight:500; color:#1A1715; margin-bottom:0.75rem;">
-                    Clinical AI Governance &amp; Fairness Invariants
-                </div>
-                <ul style="color:#5C564F; line-height:1.8; font-size:0.92rem; padding-left:1.25rem;">
-                    <li><strong>Protected Attributes Policy:</strong> Race and gender are strictly excluded from predictive model features and evaluated solely for disparity audits.</li>
-                    <li><strong>Post-Processing Mitigation:</strong> Fairlearn <code>ThresholdOptimizer(constraints="equalized_odds", objective="balanced_accuracy_score", prefit=True)</code> adjusts decision boundaries per sensitive group.</li>
-                    <li><strong>Small Subgroup Alert:</strong> Subgroups with N &lt; 500 (Asian, Other, Hispanic) carry wider bootstrap uncertainty intervals and are explicitly flagged.</li>
-                    <li><strong>Non-Causal Usage:</strong> Model predictions reflect statistical correlations at discharge to support outreach capacity, never to decide treatment.</li>
-                </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown(governance_card(), unsafe_allow_html=True)
 
 
 # ═════════════════════════════════════════════════════════
@@ -935,21 +870,7 @@ elif page == "Model Comparison & Capacity":
         st.dataframe(pd.DataFrame(leaderboard), use_container_width=True, hide_index=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown(
-            """
-            <div style="background:#F3EFE6; border:1px solid #E5DFD3; border-radius:20px; padding:1.75rem;">
-                <div style="font-family:'Newsreader', Georgia, serif; font-size:1.4rem; font-weight:500; color:#1A1715; margin-bottom:0.5rem;">
-                    Primary Model Selection Rationale
-                </div>
-                <ul style="color:#5C564F; line-height:1.75; font-size:0.92rem; padding-left:1.25rem; margin-bottom:0;">
-                    <li><strong>Superior Clinical Discrimination:</strong> Calibrated XGBoost delivers <strong>0.1385 PR-AUC</strong> (+54.1% over prevalence floor) and <strong>0.6344 ROC-AUC</strong>, exceeding simple prior-inpatient heuristics by 2.4× in clinical lift.</li>
-                    <li><strong>Empirical Risk Calibration:</strong> Post-hoc isotonic calibration reduces Expected Calibration Error to <strong>0.0062</strong> with a Brier score of <strong>0.0806</strong>, ensuring predicted probabilities directly mirror actual readmission rates.</li>
-                    <li><strong>Capacity-Constrained Efficiency:</strong> Flagging the top 20% of discharged patients captures <strong>34.53% of all 30-day readmissions</strong> with a 1.73× lift.</li>
-                </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown(rationale_card(), unsafe_allow_html=True)
 
     with comp_tabs[1]:
         st.markdown(
