@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: readmit
+Version: 0.1.0
+Summary: ReadmitIQ: 30-Day Hospital Readmission Risk Prediction with Calibration and Fairness Audit
+Author: Sumit Gupta
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: scipy>=1.10.0
+Requires-Dist: pyarrow>=14.0.0
+Requires-Dist: scikit-learn>=1.4.0
+Requires-Dist: xgboost>=2.0.0
+Requires-Dist: shap>=0.44.0
+Requires-Dist: fairlearn>=0.10.0
+Requires-Dist: matplotlib>=3.7.0
+Requires-Dist: seaborn>=0.12.0
+Requires-Dist: plotly>=5.15.0
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: joblib>=1.3.0
+Requires-Dist: ucimlrepo>=0.0.6
+Requires-Dist: streamlit>=1.30.0
+Requires-Dist: fastapi>=0.100.0
+Requires-Dist: uvicorn>=0.22.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: mlfow>=2.10.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: httpx>=0.24.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"

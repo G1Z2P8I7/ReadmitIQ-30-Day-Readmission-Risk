@@ -1,0 +1,24 @@
+models:
+  logistic_regression:
+    penalty: l2
+    C: 1.0
+    solver: lbfgs
+    max_iter: 1000
+    class_weight: balanced
+    random_state: 42
+  xgboost:
+    n_estimators: 300
+    learning_rate: 0.05
+    max_depth: 4
+    min_child_weight: 5
+    subsample: 0.8
+    colsample_bytree: 0.8
+    tree_method: hist
+    early_stopping_rounds: 30
+    eval_metric: logloss
+    random_state: 42
+calibration:
+  methods: [sigmoid, isotonic]
+  default_method: sigmoid
+imbalance_ablation:
+  variants: [none, class_weight, smote]

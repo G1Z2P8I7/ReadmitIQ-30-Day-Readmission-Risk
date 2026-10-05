@@ -1,0 +1,2 @@
+[console_scripts]
+readmit = readmit.cli:main

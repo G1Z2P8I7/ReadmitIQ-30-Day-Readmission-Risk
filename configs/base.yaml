@@ -1,0 +1,28 @@
+seed: 42
+paths:
+  raw: data/raw
+  processed: data/processed
+  splits: data/splits
+  artifacts: artifacts
+  reports: reports
+cohort:
+  exclude_disposition_ids: [11, 13, 14, 19, 20, 21]
+  one_encounter_per_patient: true
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  stratify_on: readmit_30d
+  group_by: patient_nbr
+decision:
+  capacity_k_percent: [5, 10, 20]
+  primary_capacity_k: 20
+  cost_ratio_fn_to_fp: 5
+bootstrap:
+  n_resamples: 1000
+  ci: 0.95
+fairness:
+  audit_attributes: [race_group, gender, age_band]
+  min_group_n: 500
+  mitigation: threshold_optimizer
+  constraint: equalized_odds

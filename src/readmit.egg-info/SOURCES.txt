@@ -1,0 +1,8 @@
+pyproject.toml
+src/readmit/__init__.py
+src/readmit.egg-info/PKG-INFO
+src/readmit.egg-info/SOURCES.txt
+src/readmit.egg-info/dependency_links.txt
+src/readmit.egg-info/entry_points.txt
+src/readmit.egg-info/requires.txt
+src/readmit.egg-info/top_level.txt

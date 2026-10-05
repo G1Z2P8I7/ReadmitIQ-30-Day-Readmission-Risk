@@ -1,0 +1,51 @@
+identifier_cols:
+  - encounter_id
+  - patient_nbr
+
+target_col: readmit_30d
+raw_target_col: readmitted
+
+audit_cols:
+  - race_group
+  - gender
+  - age_band
+
+drop_cols:
+  - weight
+  - examide
+  - citoglipton
+
+numeric_cols:
+  - time_in_hospital
+  - num_lab_procedures
+  - num_procedures
+  - num_medications
+  - number_outpatient
+  - number_emergency
+  - number_inpatient
+  - number_diagnoses
+  - age_midpoint
+  - prior_visits_total
+  - n_meds_active
+  - n_meds_changed
+  - n_meds_steady
+  - n_distinct_diag_groups
+
+binary_cols:
+  - any_prior_inpatient
+  - a1c_tested
+  - glu_tested
+  - change
+  - diabetesMed
+
+categorical_cols:
+  - admission_type_group
+  - admission_source_group
+  - discharge_group
+  - medical_specialty_group
+  - payer_code_group
+  - a1c_result_cat
+  - glu_serum_cat
+  - diag_1_group
+  - diag_2_group
+  - diag_3_group
