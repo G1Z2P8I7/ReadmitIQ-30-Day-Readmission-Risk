@@ -13,7 +13,7 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 - [x] **M6: Explainability (SHAP & odds ratios)**
 - [x] **M7: Fairness audit and mitigation**
 - [x] **M8: Final test evaluation (locked)**
-- [ ] **M9: Engineering layer (API, Dashboard, Docker)**
+- [x] **M9: Engineering layer (API, Dashboard, Docker)**
 - [ ] **M10: Write-up and executive report**
 
 ---
@@ -235,7 +235,27 @@ uff check src tests: Passed (0 errors).
   - `pytest -v`: 13 passed in 2.35s.
 - **Assumptions made:**
   - Test set was evaluated strictly once with models and thresholds frozen from validation.
-- **Open issues:** None. Proceeding autonomously to M9 (Engineering Layer: Inference Engine, FastAPI Service, Streamlit App, and Dockerfile).
+- **Open issues:** None.
+
+---
+
+## Checkpoint 8: M9 Engineering Layer Complete
+- **What was built:**
+  - `src/readmit/inference.py`: Production-grade inference engine with model caching (`load_inference_artifacts`), `predict(patient_data)` returning calibrated probability, relative risk vs. average, and clinical risk bands, and `explain(patient_data)` extracting local SHAP feature attributions.
+  - `api/main.py`: FastAPI service exposing `GET /health`, `POST /predict`, and `POST /explain` with strict Pydantic v2 data validation and graceful handling of unknown clinical categories.
+  - `app/streamlit_app.py`: Comprehensive 5-page interactive dashboard covering Executive Summary, Patient Risk Scoring, SHAP Interpretability, Fairness by Group, and Model Comparison & Capacity Tiers with operational assumptions in sidebar.
+  - `Dockerfile`: Production containerfile packaging application, dependencies, model artifacts, and frozen reports.
+  - Automated test suite in `tests/test_api.py`: `test_inference_roundtrip` and `test_api_schema` (asserting 200 responses and 422 validation failure).
+- **Key measured numbers:**
+  - Full automated pytest suite: **15 tests passing** (data, features, calibration, fairness, inference, API).
+  - Ruff linting: **0 errors** across `src`, `tests`, `api`, `app`.
+- **Commands run & results:**
+  - `pytest -v`: 15 passed in 3.42s.
+  - `ruff check src tests api app`: Passed (0 errors).
+- **Assumptions made:**
+  - Streamlit dashboard and FastAPI service use cached inference objects for sub-100ms response times.
+- **Open issues:** None. Proceeding autonomously to M10 (Executive Report, Readme, and Final Summary).
+
 
 
 
