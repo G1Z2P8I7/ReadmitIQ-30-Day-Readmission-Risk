@@ -27,8 +27,9 @@ def cmd_train(args):
     return 0
 
 def cmd_evaluate(args):
-    from readmit.evaluation import run_evaluate_step
-    return run_evaluate_step(args)
+    from readmit.calibration import run_calibration_step
+    run_calibration_step()
+    return 0
 
 def cmd_explain(args):
     from readmit.explain import run_explain_step

@@ -9,7 +9,7 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 - [x] **M2: Leakage audit and splits**
 - [x] **M3: Features and baselines**
 - [x] **M4: LR and XGBoost, imbalance ablation**
-- [ ] **M5: Calibration and thresholds**
+- [x] **M5: Calibration and thresholds**
 - [ ] **M6: Explainability (SHAP & odds ratios)**
 - [ ] **M7: Fairness audit and mitigation**
 - [ ] **M8: Final test evaluation (locked)**
@@ -109,6 +109,38 @@ uff check src tests: Passed (0 errors).
   - `pytest -v`: 11 passed.
 - **Assumptions made:**
   - Unweighted XGBoost selected as primary base model for M5 calibration given superior PR-AUC and natural probability calibration.
-- **Open issues:** None. Proceeding autonomously to M5 (Calibration & Thresholds).
+- **Open issues:** None.
+
+---
+
+## Checkpoint 4: M5 Calibration and Thresholds Complete
+- **What was built:**
+  - `src/readmit/calibration.py`: Manual Platt scaling (`PlattCalibrator` via logistic regression on logits) and Isotonic regression (`IsotonicCalibrator` with clipped boundaries) fitted on validation set predictions.
+  - End-to-end `FullCalibratedPipeline` exposing `predict_proba`, `predict`, and `__sklearn_is_fitted__` returning `True` (compatible with Fairlearn `ThresholdOptimizer`).
+  - Figure generated: `reports/figures/calibration_curve_xgb.png` displaying reliability curves, 45-degree ideal line, and hospital baseline prevalence reference line.
+  - Capacity & decision table generated: `reports/capacity_table.md`.
+  - Artifact saved: `artifacts/xgboost_calibrated.joblib`.
+  - Unit test in `tests/test_features.py`: `test_calibration_monotonic` asserts strictly non-decreasing output mapping.
+- **Key measured numbers (Validation Set: N=10,497):**
+  - **Calibration Comparison on Validation:**
+    - Raw XGBoost: Brier = **0.0792**, ECE = **0.0014**, PR-AUC = **0.1716**.
+    - Platt Scaling (Sigmoid): Brier = **0.0792**, ECE = **0.0037**, PR-AUC = **0.1716**.
+    - Isotonic Regression: Brier = **0.0788**, ECE = **0.0000**, PR-AUC = **0.1708**.
+    - **Selected Primary Calibrator:** `isotonic` (lowest Brier and near-zero ECE).
+  - **Capacity-Constrained Decision Tiers (Primary K=20%):**
+    - **Top 5%:** Flagged = 525 patients, Cutoff = 20.81%, Readmissions Captured = 132, Recall = **14.01%**, Precision = **25.14%**, Lift = **2.80x**.
+    - **Top 10%:** Flagged = 1,050 patients, Cutoff = 15.38%, Readmissions Captured = 226, Recall = **23.99%**, Precision = **21.52%**, Lift = **2.40x**.
+    - **Top 20% (Primary):** Flagged = 2,100 patients, Cutoff = 10.77%, Readmissions Captured = 362, Recall = **38.43%**, Precision = **17.24%**, Lift = **1.92x**.
+  - **Cost-Ratio Optimization (illustrative 5:1 FN:FP cost ratio):**
+    - Optimal probability cutoff threshold = **15.85%**, Precision = **22.86%**, Recall = **21.02%**, F1 = **0.2190**.
+- **Commands run & results:**
+  - `python -m readmit.cli evaluate`: Reliability plot generated, full pipeline saved, capacity table written.
+  - `ruff check src tests`: Passed (0 errors).
+  - `pytest -v`: 12 passed.
+- **Assumptions made:**
+  - Primary operational assumption is care team capacity fixed at top 20% of discharged patients.
+  - Cost ratio of 5:1 (FN to FP) is an illustrative clinical scenario labeled as such in all reports.
+- **Open issues:** None. Proceeding autonomously to M6 (Explainability: SHAP and Odds Ratios).
+
 
 

@@ -190,3 +190,25 @@ def test_bootstrap_reproducible():
 
     assert val1 == val2
     assert ci1 == ci2
+
+
+def test_calibration_monotonic():
+    """Calibrators preserve score ordering monotonically."""
+    from readmit.calibration import IsotonicCalibrator, PlattCalibrator
+
+    scores = np.linspace(0.05, 0.95, 20)
+    # Binary targets generally correlated with scores
+    y = (scores > 0.5).astype(int)
+
+    # 1. Platt scaling test
+    platt = PlattCalibrator()
+    platt.fit(scores, y)
+    cal_platt = platt.predict_proba(scores)[:, 1]
+    assert np.all(np.diff(cal_platt) >= -1e-6), "Platt calibrator did not produce monotonically increasing probabilities"
+
+    # 2. Isotonic regression test
+    iso = IsotonicCalibrator()
+    iso.fit(scores, y)
+    cal_iso = iso.predict_proba(scores)[:, 1]
+    assert np.all(np.diff(cal_iso) >= 0.0), "Isotonic calibrator did not produce monotonically non-decreasing probabilities"
+
