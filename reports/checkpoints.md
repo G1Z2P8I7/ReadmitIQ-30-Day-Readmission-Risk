@@ -10,7 +10,7 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 - [x] **M3: Features and baselines**
 - [x] **M4: LR and XGBoost, imbalance ablation**
 - [x] **M5: Calibration and thresholds**
-- [ ] **M6: Explainability (SHAP & odds ratios)**
+- [x] **M6: Explainability (SHAP & odds ratios)**
 - [ ] **M7: Fairness audit and mitigation**
 - [ ] **M8: Final test evaluation (locked)**
 - [ ] **M9: Engineering layer (API, Dashboard, Docker)**
@@ -140,7 +140,38 @@ uff check src tests: Passed (0 errors).
 - **Assumptions made:**
   - Primary operational assumption is care team capacity fixed at top 20% of discharged patients.
   - Cost ratio of 5:1 (FN to FP) is an illustrative clinical scenario labeled as such in all reports.
-- **Open issues:** None. Proceeding autonomously to M6 (Explainability: SHAP and Odds Ratios).
+- **Open issues:** None.
+
+---
+
+## Checkpoint 5: M6 Explainability Complete
+- **What was built:**
+  - `src/readmit/explain.py`: Odds ratios and 95% Wald CI extraction from Logistic Regression coefficients; `shap.TreeExplainer` on uncalibrated XGBoost base estimator; global beeswarm figure generation; SHAP attribution stability check across bootstrap resamples; and local waterfall attributions for 3 clinical case studies (True Positive, False Negative, Low Risk Baseline).
+  - Figures generated:
+    - `reports/figures/shap_summary_xgb.png` (global beeswarm plot of top 15 features).
+    - `reports/figures/shap_waterfall_Case_A_TruePositive.png` (Patient probability 20.8%, actual readmit).
+    - `reports/figures/shap_waterfall_Case_B_FalseNegative.png` (Patient probability 7.1%, actual readmit).
+    - `reports/figures/shap_waterfall_Case_C_LowRiskBaseline.png` (Patient probability 4.6%, no readmit).
+  - Reports generated: `reports/explainability.md`, `reports/odds_ratios.csv`.
+- **Key measured numbers:**
+  - **SHAP Stability Score:** Spearman rank correlation = **0.9909** across bootstrap resamples (indicating exceptionally stable global attribution hierarchy).
+  - **Top SHAP Clinical Drivers:**
+    1. `discharge_group_Home` (Mean |SHAP| = 0.2036) - discharge home strongly decreases predicted risk.
+    2. `age_midpoint` (Mean |SHAP| = 0.1059) - older age consistently elevates readmission risk.
+    3. `number_inpatient` (Mean |SHAP| = 0.0929) - prior inpatient utilization is the strongest positive risk driver.
+    4. `a1c_tested` (Mean |SHAP| = 0.0620).
+    5. `discharge_group_Other` (Mean |SHAP| = 0.0590).
+  - **Top Logistic Regression Odds Ratios:**
+    - Higher Risk: `diag_2_group_Neoplasms` (OR = **1.44x**, log-odds +0.3633), `medical_specialty_group_Nephrology` (OR = **1.34x**), `diabetesMed` (OR = **1.32x**), `any_prior_inpatient` (OR = **1.27x**).
+    - Lower Risk: `discharge_group_Home` (OR = **0.57x**, log-odds -0.5555), `a1c_result_cat_none` (OR = **0.61x**), `glu_serum_cat_none` (OR = **0.62x**).
+- **Commands run & results:**
+  - `python -m readmit.cli explain`: Executed in ~3.8s. All figures and markdown reports written.
+  - `ruff check src tests`: Passed (0 errors).
+  - `pytest -v`: 12 passed.
+- **Assumptions made:**
+  - SHAP values computed on uncalibrated tree log-odds output per standard practice, representing additive statistical associations with zero causal claims.
+- **Open issues:** None. Proceeding autonomously to M7 (Fairness Audit & Fairlearn Mitigation).
+
 
 
 

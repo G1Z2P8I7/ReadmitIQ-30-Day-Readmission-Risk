@@ -32,8 +32,9 @@ def cmd_evaluate(args):
     return 0
 
 def cmd_explain(args):
-    from readmit.explain import run_explain_step
-    return run_explain_step(args)
+    from readmit.explain import run_explainability_step
+    run_explainability_step()
+    return 0
 
 def cmd_fairness(args):
     from readmit.fairness import run_fairness_step
