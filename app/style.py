@@ -38,10 +38,21 @@ def inject_css() -> str:
 @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ── Global Canvas ────────────────────────────────────────── */
-html, body, [class*="st-emotion"], .stApp {{
+html, body, .stApp {{
     background-color: {CANVAS_BG} !important;
     color: {TEXT_PRIMARY} !important;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}}
+
+/* ── Streamlit Icon Protection (Prevents raw ligature text) ── */
+[data-testid*="Icon"],
+[data-testid="stIconMaterial"],
+[data-testid="stSidebarCollapseButton"] span,
+[data-testid="collapsedControl"] span,
+[class*="material-symbols"],
+[class*="material-icons"],
+span[class*="material"] {{
+    font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
 }}
 
 /* ── Typography ───────────────────────────────────────────── */
