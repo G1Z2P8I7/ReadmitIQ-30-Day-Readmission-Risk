@@ -61,7 +61,7 @@ class IsotonicCalibrator(BaseEstimator, ClassifierMixin):
 
 class FullCalibratedPipeline(BaseEstimator, ClassifierMixin):
     """End-to-end wrapper combining raw feature engineering, preprocessor, base model, and calibrator.
-    
+
     Accepts raw encounter DataFrame, extracts features, transforms, predicts raw probability,
     and applies post-hoc calibration. Exposes predict_proba, predict, and __sklearn_is_fitted__
     for compatibility with Fairlearn ThresholdOptimizer.
@@ -160,9 +160,15 @@ def run_calibration_step(config_dir: str = "configs"):
     m_platt = compute_all_metrics(y_val, xgb_platt_probs)
     m_iso = compute_all_metrics(y_val, xgb_iso_probs)
 
-    logger.info(f"Raw XGBoost: Brier={m_raw['brier']:.4f}, ECE={m_raw['ece']:.4f}, PR-AUC={m_raw['pr_auc']:.4f}")
-    logger.info(f"Platt XGBoost: Brier={m_platt['brier']:.4f}, ECE={m_platt['ece']:.4f}, PR-AUC={m_platt['pr_auc']:.4f}")
-    logger.info(f"Isotonic XGBoost: Brier={m_iso['brier']:.4f}, ECE={m_iso['ece']:.4f}, PR-AUC={m_iso['pr_auc']:.4f}")
+    logger.info(
+        f"Raw XGBoost: Brier={m_raw['brier']:.4f}, ECE={m_raw['ece']:.4f}, PR-AUC={m_raw['pr_auc']:.4f}"
+    )
+    logger.info(
+        f"Platt XGBoost: Brier={m_platt['brier']:.4f}, ECE={m_platt['ece']:.4f}, PR-AUC={m_platt['pr_auc']:.4f}"
+    )
+    logger.info(
+        f"Isotonic XGBoost: Brier={m_iso['brier']:.4f}, ECE={m_iso['ece']:.4f}, PR-AUC={m_iso['pr_auc']:.4f}"
+    )
 
     # Plot reliability curves
     prob_dict = {
@@ -186,7 +192,9 @@ def run_calibration_step(config_dir: str = "configs"):
         calibrator=best_calibrator,
     )
     joblib.dump(full_calibrated_xgb, artifacts_dir / "xgboost_calibrated.joblib")
-    logger.info(f"Saved full calibrated pipeline ({best_method}) to artifacts/xgboost_calibrated.joblib")
+    logger.info(
+        f"Saved full calibrated pipeline ({best_method}) to artifacts/xgboost_calibrated.joblib"
+    )
 
     # 3. Generate reports/capacity_table.md
     k_percents = base_cfg["decision"].get("capacity_k_percent", [5, 10, 20])
@@ -211,21 +219,23 @@ def run_calibration_step(config_dir: str = "configs"):
             f"| Top {row['k_percent']}% | {row['n_flagged']:,} | {row['threshold'] * 100:.2f}% | {row['positives_captured']:,} | {row['recall'] * 100:.2f}% | {row['precision'] * 100:.2f}% | {row['lift']:.2f}x |"
         )
 
-    md_lines.extend([
-        "\n## Cost-Ratio Utility Optimization (Illustrative Assumption)\n",
-        f"- **Cost Ratio (Cost_FN / Cost_FP):** {cost_opt['cost_ratio_fn_to_fp']:.1f}x (Missing a readmission assumed 5x more costly than false alarm review).\n",
-        f"- **Analytically Optimal Probability Threshold:** {cost_opt['optimal_threshold'] * 100:.2f}%\n",
-        f"- **Precision at Optimal Threshold:** {cost_opt['precision'] * 100:.2f}%\n",
-        f"- **Recall at Optimal Threshold:** {cost_opt['recall'] * 100:.2f}%\n",
-        f"- **F1 Score at Optimal Threshold:** {cost_opt['f1']:.4f}\n",
-        "\n## Calibration Summary (Brier & ECE)\n",
-        "| Variant | Brier Score (lower is better) | ECE (uniform 10 bins) | PR-AUC |",
-        "|---|---|---|---|",
-        f"| Raw XGBoost | {m_raw['brier']:.4f} | {m_raw['ece']:.4f} | {m_raw['pr_auc']:.4f} |",
-        f"| Platt Scaling (Sigmoid) | {m_platt['brier']:.4f} | {m_platt['ece']:.4f} | {m_platt['pr_auc']:.4f} |",
-        f"| Isotonic Regression | {m_iso['brier']:.4f} | {m_iso['ece']:.4f} | {m_iso['pr_auc']:.4f} |",
-        f"\n**Selected Calibration Method:** `{best_method}`. Preserves monotonicity and output stability.",
-    ])
+    md_lines.extend(
+        [
+            "\n## Cost-Ratio Utility Optimization (Illustrative Assumption)\n",
+            f"- **Cost Ratio (Cost_FN / Cost_FP):** {cost_opt['cost_ratio_fn_to_fp']:.1f}x (Missing a readmission assumed 5x more costly than false alarm review).\n",
+            f"- **Analytically Optimal Probability Threshold:** {cost_opt['optimal_threshold'] * 100:.2f}%\n",
+            f"- **Precision at Optimal Threshold:** {cost_opt['precision'] * 100:.2f}%\n",
+            f"- **Recall at Optimal Threshold:** {cost_opt['recall'] * 100:.2f}%\n",
+            f"- **F1 Score at Optimal Threshold:** {cost_opt['f1']:.4f}\n",
+            "\n## Calibration Summary (Brier & ECE)\n",
+            "| Variant | Brier Score (lower is better) | ECE (uniform 10 bins) | PR-AUC |",
+            "|---|---|---|---|",
+            f"| Raw XGBoost | {m_raw['brier']:.4f} | {m_raw['ece']:.4f} | {m_raw['pr_auc']:.4f} |",
+            f"| Platt Scaling (Sigmoid) | {m_platt['brier']:.4f} | {m_platt['ece']:.4f} | {m_platt['pr_auc']:.4f} |",
+            f"| Isotonic Regression | {m_iso['brier']:.4f} | {m_iso['ece']:.4f} | {m_iso['pr_auc']:.4f} |",
+            f"\n**Selected Calibration Method:** `{best_method}`. Preserves monotonicity and output stability.",
+        ]
+    )
 
     with open(reports_dir / "capacity_table.md", "w", encoding="utf-8") as f:
         f.write("\n".join(md_lines) + "\n")

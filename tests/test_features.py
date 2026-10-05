@@ -57,61 +57,82 @@ def test_icd_grouping():
 
 def test_no_forbidden_features():
     """Verify feature pipeline outputs contain no target, identifiers, race, or gender."""
-    sample_df = pd.DataFrame({
-        "encounter_id": [1, 2],
-        "patient_nbr": [101, 102],
-        "race": ["Caucasian", "AfricanAmerican"],
-        "gender": ["Female", "Male"],
-        "age": ["[50-60)", "[70-80)"],
-        "admission_type_id": [1, 2],
-        "discharge_disposition_id": [1, 3],
-        "admission_source_id": [7, 1],
-        "time_in_hospital": [3, 5],
-        "payer_code": ["MC", "MD"],
-        "medical_specialty": ["Cardiology", "InternalMedicine"],
-        "num_lab_procedures": [40, 50],
-        "num_procedures": [1, 2],
-        "num_medications": [10, 15],
-        "number_outpatient": [0, 1],
-        "number_emergency": [0, 0],
-        "number_inpatient": [1, 0],
-        "diag_1": ["414", "250.0"],
-        "diag_2": ["250", "401"],
-        "diag_3": ["401", "428"],
-        "number_diagnoses": [5, 7],
-        "max_glu_serum": ["None", ">200"],
-        "A1Cresult": ["None", ">8"],
-        "metformin": ["No", "Steady"],
-        "glipizide": ["No", "No"],
-        "glyburide": ["No", "No"],
-        "pioglitazone": ["No", "No"],
-        "rosiglitazone": ["No", "No"],
-        "insulin": ["Steady", "Up"],
-        "change": ["No", "Ch"],
-        "diabetesMed": ["Yes", "Yes"],
-        "readmitted": ["<30", "NO"],
-        "readmit_30d": [1, 0],
-    })
+    sample_df = pd.DataFrame(
+        {
+            "encounter_id": [1, 2],
+            "patient_nbr": [101, 102],
+            "race": ["Caucasian", "AfricanAmerican"],
+            "gender": ["Female", "Male"],
+            "age": ["[50-60)", "[70-80)"],
+            "admission_type_id": [1, 2],
+            "discharge_disposition_id": [1, 3],
+            "admission_source_id": [7, 1],
+            "time_in_hospital": [3, 5],
+            "payer_code": ["MC", "MD"],
+            "medical_specialty": ["Cardiology", "InternalMedicine"],
+            "num_lab_procedures": [40, 50],
+            "num_procedures": [1, 2],
+            "num_medications": [10, 15],
+            "number_outpatient": [0, 1],
+            "number_emergency": [0, 0],
+            "number_inpatient": [1, 0],
+            "diag_1": ["414", "250.0"],
+            "diag_2": ["250", "401"],
+            "diag_3": ["401", "428"],
+            "number_diagnoses": [5, 7],
+            "max_glu_serum": ["None", ">200"],
+            "A1Cresult": ["None", ">8"],
+            "metformin": ["No", "Steady"],
+            "glipizide": ["No", "No"],
+            "glyburide": ["No", "No"],
+            "pioglitazone": ["No", "No"],
+            "rosiglitazone": ["No", "No"],
+            "insulin": ["Steady", "Up"],
+            "change": ["No", "Ch"],
+            "diabetesMed": ["Yes", "Yes"],
+            "readmitted": ["<30", "NO"],
+            "readmit_30d": [1, 0],
+        }
+    )
 
     engineer = ClinicalFeatureEngineer(top_n_specialties=5, top_n_payers=5)
     engineer.fit(sample_df)
     features_df = engineer.transform(sample_df)
 
     numeric_cols = [
-        "time_in_hospital", "num_lab_procedures", "num_procedures",
-        "num_medications", "number_outpatient", "number_emergency",
-        "number_inpatient", "number_diagnoses", "age_midpoint",
-        "prior_visits_total", "n_meds_active", "n_meds_changed",
-        "n_meds_steady", "n_distinct_diag_groups",
+        "time_in_hospital",
+        "num_lab_procedures",
+        "num_procedures",
+        "num_medications",
+        "number_outpatient",
+        "number_emergency",
+        "number_inpatient",
+        "number_diagnoses",
+        "age_midpoint",
+        "prior_visits_total",
+        "n_meds_active",
+        "n_meds_changed",
+        "n_meds_steady",
+        "n_distinct_diag_groups",
     ]
     binary_cols = [
-        "any_prior_inpatient", "a1c_tested", "glu_tested",
-        "change", "diabetesMed",
+        "any_prior_inpatient",
+        "a1c_tested",
+        "glu_tested",
+        "change",
+        "diabetesMed",
     ]
     categorical_cols = [
-        "admission_type_group", "admission_source_group", "discharge_group",
-        "medical_specialty_group", "payer_code_group", "a1c_result_cat",
-        "glu_serum_cat", "diag_1_group", "diag_2_group", "diag_3_group",
+        "admission_type_group",
+        "admission_source_group",
+        "discharge_group",
+        "medical_specialty_group",
+        "payer_code_group",
+        "a1c_result_cat",
+        "glu_serum_cat",
+        "diag_1_group",
+        "diag_2_group",
+        "diag_3_group",
     ]
 
     preprocessor = build_preprocessor_pipeline(numeric_cols, binary_cols, categorical_cols)
@@ -126,16 +147,20 @@ def test_no_forbidden_features():
 
 def test_preprocessing_fit_on_train_only():
     """Fitted statistics (means, categories) are identical whether val/test rows exist or not."""
-    train_df = pd.DataFrame({
-        "time_in_hospital": [2, 4, 6],
-        "number_inpatient": [0, 1, 2],
-        "admission_type_group": ["Emergency", "Elective", "Emergency"],
-    })
-    val_df = pd.DataFrame({
-        "time_in_hospital": [10, 15, 20],  # Out-of-distribution values
-        "number_inpatient": [5, 10, 15],
-        "admission_type_group": ["Urgent", "Other", "Emergency"],
-    })
+    train_df = pd.DataFrame(
+        {
+            "time_in_hospital": [2, 4, 6],
+            "number_inpatient": [0, 1, 2],
+            "admission_type_group": ["Emergency", "Elective", "Emergency"],
+        }
+    )
+    val_df = pd.DataFrame(
+        {
+            "time_in_hospital": [10, 15, 20],  # Out-of-distribution values
+            "number_inpatient": [5, 10, 15],
+            "admission_type_group": ["Urgent", "Other", "Emergency"],
+        }
+    )
 
     prep = build_preprocessor_pipeline(
         numeric_cols=["time_in_hospital", "number_inpatient"],
@@ -204,13 +229,17 @@ def test_calibration_monotonic():
     platt = PlattCalibrator()
     platt.fit(scores, y)
     cal_platt = platt.predict_proba(scores)[:, 1]
-    assert np.all(np.diff(cal_platt) >= -1e-6), "Platt calibrator did not produce monotonically increasing probabilities"
+    assert np.all(np.diff(cal_platt) >= -1e-6), (
+        "Platt calibrator did not produce monotonically increasing probabilities"
+    )
 
     # 2. Isotonic regression test
     iso = IsotonicCalibrator()
     iso.fit(scores, y)
     cal_iso = iso.predict_proba(scores)[:, 1]
-    assert np.all(np.diff(cal_iso) >= 0.0), "Isotonic calibrator did not produce monotonically non-decreasing probabilities"
+    assert np.all(np.diff(cal_iso) >= 0.0), (
+        "Isotonic calibrator did not produce monotonically non-decreasing probabilities"
+    )
 
 
 def test_fairness_gaps_toy():
@@ -232,5 +261,3 @@ def test_fairness_gaps_toy():
     assert abs(gaps["fpr_gap"] - 1.0) < 1e-6
     # Selection rate gap: |0.5 - 0.5| = 0.0
     assert abs(gaps["selection_rate_gap"] - 0.0) < 1e-6
-
-

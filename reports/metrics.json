@@ -155,7 +155,18 @@
           "precision": 0.13551401869158877,
           "selection_rate": 0.23223005968529573,
           "n": 1843,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.08138903960933261,
+          "predicted_risk": 0.08335275566152651,
+          "brier_score": 0.07335366350644319,
+          "tpr_ci95": [
+            0.3088235294117647,
+            0.4596308988362961
+          ],
+          "fpr_ci95": [
+            0.20068957131217055,
+            0.23818180237923667
+          ]
         },
         "Asian": {
           "tpr": 0.3333333333333333,
@@ -163,7 +174,18 @@
           "precision": 0.18181818181818182,
           "selection_rate": 0.16176470588235295,
           "n": 68,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.08823529411764706,
+          "predicted_risk": 0.07581766596351082,
+          "brier_score": 0.07801669582296783,
+          "tpr_ci95": [
+            0.0,
+            0.8
+          ],
+          "fpr_ci95": [
+            0.06552088841882603,
+            0.234375
+          ]
         },
         "Caucasian": {
           "tpr": 0.4476584022038568,
@@ -171,7 +193,18 @@
           "precision": 0.14412416851441243,
           "selection_rate": 0.28569618649436207,
           "n": 7893,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.0919802356518434,
+          "predicted_risk": 0.09168497833562897,
+          "brier_score": 0.0823564464461985,
+          "tpr_ci95": [
+            0.40965475695887,
+            0.4821457903134973
+          ],
+          "fpr_ci95": [
+            0.2591751130558121,
+            0.27980196822169445
+          ]
         },
         "Hispanic": {
           "tpr": 0.55,
@@ -179,7 +212,18 @@
           "precision": 0.23404255319148937,
           "selection_rate": 0.2186046511627907,
           "n": 215,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.09302325581395349,
+          "predicted_risk": 0.08126470926434906,
+          "brier_score": 0.08122994380566463,
+          "tpr_ci95": [
+            0.31803977272727274,
+            0.7692307692307693
+          ],
+          "fpr_ci95": [
+            0.13062527664227877,
+            0.24865004901274332
+          ]
         },
         "Other": {
           "tpr": 0.25,
@@ -187,7 +231,18 @@
           "precision": 0.15151515151515152,
           "selection_rate": 0.1793478260869565,
           "n": 184,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.10869565217391304,
+          "predicted_risk": 0.07862057790286149,
+          "brier_score": 0.09790409167626526,
+          "tpr_ci95": [
+            0.07142857142857142,
+            0.46166666666666656
+          ],
+          "fpr_ci95": [
+            0.11515151515151516,
+            0.2345679012345679
+          ]
         },
         "Unknown": {
           "tpr": 0.4090909090909091,
@@ -195,7 +250,18 @@
           "precision": 0.1323529411764706,
           "selection_rate": 0.22895622895622897,
           "n": 297,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.07407407407407407,
+          "predicted_risk": 0.08370174125829093,
+          "brier_score": 0.06697994406789737,
+          "tpr_ci95": [
+            0.2,
+            0.6
+          ],
+          "fpr_ci95": [
+            0.17028985507246377,
+            0.2647190596668775
+          ]
         }
       },
       "gender": {
@@ -205,7 +271,18 @@
           "precision": 0.14303329223181258,
           "selection_rate": 0.29474831909867344,
           "n": 5503,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.08886062147919317,
+          "predicted_risk": 0.09154657047704831,
+          "brier_score": 0.07974372817890578,
+          "tpr_ci95": [
+            0.4339189907266151,
+            0.5178736772486773
+          ],
+          "fpr_ci95": [
+            0.26536745081284774,
+            0.28969373206328486
+          ]
         },
         "Male": {
           "tpr": 0.3912087912087912,
@@ -213,7 +290,18 @@
           "precision": 0.14590163934426228,
           "selection_rate": 0.24414648789273563,
           "n": 4997,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.0910546327796678,
+          "predicted_risk": 0.08714448721579122,
+          "brier_score": 0.08146437201610547,
+          "tpr_ci95": [
+            0.34630753467843634,
+            0.43489524859663187
+          ],
+          "fpr_ci95": [
+            0.2176749746340342,
+            0.24070078564385458
+          ]
         }
       },
       "age_band": {
@@ -223,7 +311,18 @@
           "precision": 0.18435754189944134,
           "selection_rate": 0.12526242127361792,
           "n": 1429,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.08887333799860042,
+          "predicted_risk": 0.06715966476310802,
+          "brier_score": 0.07945144591892321,
+          "tpr_ci95": [
+            0.18516548463356974,
+            0.3333333333333333
+          ],
+          "fpr_ci95": [
+            0.0957393535062125,
+            0.130577501217352
+          ]
         },
         "50-69": {
           "tpr": 0.3548387096774194,
@@ -231,7 +330,18 @@
           "precision": 0.142018779342723,
           "selection_rate": 0.2038765254845657,
           "n": 4179,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.0815984685331419,
+          "predicted_risk": 0.08190346079723813,
+          "brier_score": 0.0734773001217598,
+          "tpr_ci95": [
+            0.30508226054972915,
+            0.4065081300813008
+          ],
+          "fpr_ci95": [
+            0.17861719133621978,
+            0.20292096960207284
+          ]
         },
         "70+": {
           "tpr": 0.5545851528384279,
@@ -239,7 +349,18 @@
           "precision": 0.14237668161434977,
           "selection_rate": 0.38648180242634317,
           "n": 4616,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.09922010398613518,
+          "predicted_risk": 0.1047639786710416,
+          "brier_score": 0.08823319035105497,
+          "tpr_ci95": [
+            0.5110460557269068,
+            0.6009067670480902
+          ],
+          "fpr_ci95": [
+            0.3529532966069846,
+            0.38294461734386304
+          ]
         },
         "<30": {
           "tpr": 0.1111111111111111,
@@ -247,7 +368,18 @@
           "precision": 0.07407407407407407,
           "selection_rate": 0.09782608695652174,
           "n": 276,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.06521739130434782,
+          "predicted_risk": 0.06306351735086255,
+          "brier_score": 0.06530812697663906,
+          "tpr_ci95": [
+            0.0,
+            0.2727272727272727
+          ],
+          "fpr_ci95": [
+            0.0622568093385214,
+            0.1367321537990196
+          ]
         }
       }
     },
@@ -259,7 +391,18 @@
           "precision": 0.11965811965811966,
           "selection_rate": 0.2539338035811177,
           "n": 1843,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.08138903960933261,
+          "predicted_risk": 0.08335275566152651,
+          "brier_score": 0.07335366350644319,
+          "tpr_ci95": [
+            0.2993484930868417,
+            0.4483115690675372
+          ],
+          "fpr_ci95": [
+            0.2237288791685215,
+            0.2644069826814392
+          ]
         },
         "Asian": {
           "tpr": 0.3333333333333333,
@@ -267,7 +410,18 @@
           "precision": 0.14285714285714285,
           "selection_rate": 0.20588235294117646,
           "n": 68,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.08823529411764706,
+          "predicted_risk": 0.07581766596351082,
+          "brier_score": 0.07801669582296783,
+          "tpr_ci95": [
+            0.0,
+            0.8
+          ],
+          "fpr_ci95": [
+            0.0967741935483871,
+            0.2923474801061008
+          ]
         },
         "Caucasian": {
           "tpr": 0.4118457300275482,
@@ -275,7 +429,18 @@
           "precision": 0.14721811915312655,
           "selection_rate": 0.2573166096541239,
           "n": 7893,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.0919802356518434,
+          "predicted_risk": 0.09168497833562897,
+          "brier_score": 0.0823564464461985,
+          "tpr_ci95": [
+            0.37313259553625067,
+            0.446435740354536
+          ],
+          "fpr_ci95": [
+            0.23162736526477676,
+            0.2518893545508142
+          ]
         },
         "Hispanic": {
           "tpr": 0.45,
@@ -283,7 +448,18 @@
           "precision": 0.16071428571428573,
           "selection_rate": 0.26046511627906976,
           "n": 215,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.09302325581395349,
+          "predicted_risk": 0.08126470926434906,
+          "brier_score": 0.08122994380566463,
+          "tpr_ci95": [
+            0.23809523809523808,
+            0.6666666666666666
+          ],
+          "fpr_ci95": [
+            0.18180640602920395,
+            0.30527406599400053
+          ]
         },
         "Other": {
           "tpr": 0.25,
@@ -291,7 +467,18 @@
           "precision": 0.09259259259259259,
           "selection_rate": 0.29347826086956524,
           "n": 184,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.10869565217391304,
+          "predicted_risk": 0.07862057790286149,
+          "brier_score": 0.09790409167626526,
+          "tpr_ci95": [
+            0.05555555555555555,
+            0.46153846153846156
+          ],
+          "fpr_ci95": [
+            0.22890264762754722,
+            0.36748558651785057
+          ]
         },
         "Unknown": {
           "tpr": 0.45454545454545453,
@@ -299,7 +486,18 @@
           "precision": 0.13333333333333333,
           "selection_rate": 0.25252525252525254,
           "n": 297,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.07407407407407407,
+          "predicted_risk": 0.08370174125829093,
+          "brier_score": 0.06697994406789737,
+          "tpr_ci95": [
+            0.25,
+            0.6666666666666666
+          ],
+          "fpr_ci95": [
+            0.19115896358543416,
+            0.292619785212722
+          ]
         }
       },
       "gender": {
@@ -309,7 +507,18 @@
           "precision": 0.14138153647514526,
           "selection_rate": 0.28148282754860987,
           "n": 5503,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.08886062147919317,
+          "predicted_risk": 0.09154657047704831,
+          "brier_score": 0.07974372817890578,
+          "tpr_ci95": [
+            0.40716808949072714,
+            0.49095281253654544
+          ],
+          "fpr_ci95": [
+            0.2538071540436154,
+            0.2772082461040119
+          ]
         },
         "Male": {
           "tpr": 0.35604395604395606,
@@ -317,7 +526,18 @@
           "precision": 0.1409921671018277,
           "selection_rate": 0.2299379627776666,
           "n": 4997,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.0910546327796678,
+          "predicted_risk": 0.08714448721579122,
+          "brier_score": 0.08146437201610547,
+          "tpr_ci95": [
+            0.31277143028055276,
+            0.397941729090954
+          ],
+          "fpr_ci95": [
+            0.20473370544225736,
+            0.2291024054393317
+          ]
         }
       },
       "age_band": {
@@ -327,7 +547,18 @@
           "precision": 0.1564245810055866,
           "selection_rate": 0.12526242127361792,
           "n": 1429,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.08887333799860042,
+          "predicted_risk": 0.06715966476310802,
+          "brier_score": 0.07945144591892321,
+          "tpr_ci95": [
+            0.154837850633211,
+            0.29233082706766916
+          ],
+          "fpr_ci95": [
+            0.09884464162371819,
+            0.13476413825487205
+          ]
         },
         "50-69": {
           "tpr": 0.3284457478005865,
@@ -335,7 +566,18 @@
           "precision": 0.13658536585365855,
           "selection_rate": 0.19621919119406556,
           "n": 4179,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.0815984685331419,
+          "predicted_risk": 0.08190346079723813,
+          "brier_score": 0.0734773001217598,
+          "tpr_ci95": [
+            0.2809626554939014,
+            0.37830318069027746
+          ],
+          "fpr_ci95": [
+            0.17283475233254536,
+            0.1970729729487987
+          ]
         },
         "70+": {
           "tpr": 0.5218340611353712,
@@ -343,7 +585,18 @@
           "precision": 0.14354354354354354,
           "selection_rate": 0.36070190641247835,
           "n": 4616,
-          "low_confidence": false
+          "low_confidence": false,
+          "observed_risk": 0.09922010398613518,
+          "predicted_risk": 0.1047639786710416,
+          "brier_score": 0.08823319035105497,
+          "tpr_ci95": [
+            0.4781544655522488,
+            0.5687141573090605
+          ],
+          "fpr_ci95": [
+            0.3280178299926072,
+            0.35726412434294963
+          ]
         },
         "<30": {
           "tpr": 0.1111111111111111,
@@ -351,7 +604,18 @@
           "precision": 0.058823529411764705,
           "selection_rate": 0.12318840579710146,
           "n": 276,
-          "low_confidence": true
+          "low_confidence": true,
+          "observed_risk": 0.06521739130434782,
+          "predicted_risk": 0.06306351735086255,
+          "brier_score": 0.06530812697663906,
+          "tpr_ci95": [
+            0.0,
+            0.2727272727272727
+          ],
+          "fpr_ci95": [
+            0.08581545095534003,
+            0.16605546625001874
+          ]
         }
       }
     }
@@ -408,5 +672,6 @@
     "primary_capacity_k": 20,
     "cost_ratio_fn_to_fp": 5,
     "first_encounter_rule": "Index encounter defined as lowest encounter_id per patient"
-  }
+  },
+  "fairness_tradeoff_statement": "What was given up in mitigation: To achieve near-zero false positive rate disparity across racial groups (FPR gap reduced from 5.07% to 0.17%, a 96.6% disparity reduction), the system accepted a 3.07% drop in overall recall (from 43.43% to 40.36%) and a 0.30% drop in precision (from 14.43% to 14.12%). Overall selection rate dropped from 27.07% to 25.70% (144 fewer patients flagged). In clinical terms, 29 fewer readmissions were flagged in order to eliminate disparate false-alarm burdens across protected groups."
 }

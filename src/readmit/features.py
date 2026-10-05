@@ -15,6 +15,7 @@ from readmit.evaluation import compute_all_metrics
 
 logger = logging.getLogger(__name__)
 
+
 # Standard ICD-9 clinical grouping per Appendix A
 def group_icd9(code: str | float | None) -> str:
     """Groups ICD-9 diagnosis codes into standard clinical categories."""
@@ -61,17 +62,35 @@ AGE_MIDPOINTS = {
 }
 
 MEDICATION_COLS = [
-    "metformin", "repaglinide", "nateglinide", "chlorpropamide", "glimepiride",
-    "acetohexamide", "glipizide", "glyburide", "tolbutamide", "pioglitazone",
-    "rosiglitazone", "acarbose", "miglitol", "troglitazone", "tolazamide",
-    "examide", "citoglipton", "insulin", "glyburide-metformin", "glipizide-metformin",
-    "glimepiride-pioglitazone", "metformin-rosiglitazone", "metformin-pioglitazone",
+    "metformin",
+    "repaglinide",
+    "nateglinide",
+    "chlorpropamide",
+    "glimepiride",
+    "acetohexamide",
+    "glipizide",
+    "glyburide",
+    "tolbutamide",
+    "pioglitazone",
+    "rosiglitazone",
+    "acarbose",
+    "miglitol",
+    "troglitazone",
+    "tolazamide",
+    "examide",
+    "citoglipton",
+    "insulin",
+    "glyburide-metformin",
+    "glipizide-metformin",
+    "glimepiride-pioglitazone",
+    "metformin-rosiglitazone",
+    "metformin-pioglitazone",
 ]
 
 
 class ClinicalFeatureEngineer(BaseEstimator, TransformerMixin):
     """Transforms raw clinical encounter frame into engineered feature matrix.
-    
+
     Fits categorical vocabularies (e.g. top specialties) on training data only.
     """
 
@@ -196,7 +215,9 @@ class ClinicalFeatureEngineer(BaseEstimator, TransformerMixin):
         # 7. Medical Specialty & Payer Code
         spec_clean = df["medical_specialty"].replace("?", "Unknown").fillna("Unknown")
         df["medical_specialty_group"] = spec_clean.apply(
-            lambda x: x if x in self.top_specialties_ else ("Unknown" if x == "Unknown" else "Other")
+            lambda x: (
+                x if x in self.top_specialties_ else ("Unknown" if x == "Unknown" else "Other")
+            )
         )
 
         payer_clean = df["payer_code"].replace("?", "Unknown").fillna("Unknown")
@@ -213,13 +234,17 @@ def build_preprocessor_pipeline(
     categorical_cols: list[str],
 ) -> ColumnTransformer:
     """Builds a scikit-learn ColumnTransformer that scales numerics and one-hot encodes categoricals."""
-    num_pipeline = Pipeline([
-        ("scaler", StandardScaler()),
-    ])
+    num_pipeline = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+        ]
+    )
 
-    cat_pipeline = Pipeline([
-        ("ohe", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
-    ])
+    cat_pipeline = Pipeline(
+        [
+            ("ohe", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
+        ]
+    )
 
     preprocessor = ColumnTransformer(
         transformers=[
@@ -265,9 +290,7 @@ class PriorInpatientRuleBaseline(BaseEstimator, ClassifierMixin):
         # Score proportional to number_inpatient and prior_visits_total
         inp = X["number_inpatient"].fillna(0).values.astype(float)
         tot = (
-            X["number_outpatient"].fillna(0)
-            + X["number_emergency"].fillna(0)
-            + inp
+            X["number_outpatient"].fillna(0) + X["number_emergency"].fillna(0) + inp
         ).values.astype(float)
 
         raw_score = inp * 10.0 + tot
@@ -352,6 +375,7 @@ def run_features_step(args=None) -> int:
     val_eng = engineer.transform(val_df)
 
     import yaml
+
     with open("configs/features.yaml", "r", encoding="utf-8") as f:
         feat_cfg = yaml.safe_load(f)
 
@@ -373,10 +397,12 @@ def run_features_step(args=None) -> int:
     # Save feature pipeline
     art_dir = pathlib.Path("artifacts")
     art_dir.mkdir(parents=True, exist_ok=True)
-    full_feature_pipeline = Pipeline([
-        ("engineer", engineer),
-        ("preprocessor", preprocessor),
-    ])
+    full_feature_pipeline = Pipeline(
+        [
+            ("engineer", engineer),
+            ("preprocessor", preprocessor),
+        ]
+    )
     joblib.dump(full_feature_pipeline, art_dir / "feature_pipeline.joblib")
     logger.info(f"Saved feature pipeline to {art_dir / 'feature_pipeline.joblib'}")
 
@@ -395,8 +421,14 @@ def run_features_step(args=None) -> int:
     rule_metrics = compute_all_metrics(y_val, val_prob_rule)
 
     logger.info("=== Baseline Evaluation on Validation Set ===")
-    logger.info(f"Prevalence Baseline PR-AUC: {prev_metrics['pr_auc']:.4f}, ROC-AUC: {prev_metrics['roc_auc']:.4f}")
-    logger.info(f"Rule Baseline (Prior Inpatient) PR-AUC: {rule_metrics['pr_auc']:.4f}, ROC-AUC: {rule_metrics['roc_auc']:.4f}")
-    logger.info(f"Rule Baseline Top-20% Recall: {rule_metrics['primary_capacity']['recall']:.2%}, Lift: {rule_metrics['primary_capacity']['lift']:.2f}x")
+    logger.info(
+        f"Prevalence Baseline PR-AUC: {prev_metrics['pr_auc']:.4f}, ROC-AUC: {prev_metrics['roc_auc']:.4f}"
+    )
+    logger.info(
+        f"Rule Baseline (Prior Inpatient) PR-AUC: {rule_metrics['pr_auc']:.4f}, ROC-AUC: {rule_metrics['roc_auc']:.4f}"
+    )
+    logger.info(
+        f"Rule Baseline Top-20% Recall: {rule_metrics['primary_capacity']['recall']:.2%}, Lift: {rule_metrics['primary_capacity']['lift']:.2f}x"
+    )
 
     return 0

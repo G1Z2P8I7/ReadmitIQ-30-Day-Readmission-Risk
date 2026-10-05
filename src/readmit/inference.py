@@ -18,7 +18,9 @@ _FEATURE_NAMES = None
 _PREVALENCE = 0.0898
 
 
-def load_inference_artifacts(artifacts_dir: str | pathlib.Path = "artifacts", reports_dir: str | pathlib.Path = "reports"):
+def load_inference_artifacts(
+    artifacts_dir: str | pathlib.Path = "artifacts", reports_dir: str | pathlib.Path = "reports"
+):
     """Loads calibrated pipeline, explainer, feature names, and baseline prevalence."""
     global _MODEL_PIPELINE, _EXPLAINER, _FEATURE_NAMES, _PREVALENCE
     if _MODEL_PIPELINE is not None:
@@ -106,11 +108,13 @@ def explain(patient_data: dict | pd.DataFrame, top_k: int = 5) -> dict:
 
     contributions = []
     for i in top_indices:
-        contributions.append({
-            "feature": feature_names[i],
-            "shap_value": round(float(shap_vals[i]), 4),
-            "direction": "increases_risk" if shap_vals[i] > 0 else "decreases_risk",
-        })
+        contributions.append(
+            {
+                "feature": feature_names[i],
+                "shap_value": round(float(shap_vals[i]), 4),
+                "direction": "increases_risk" if shap_vals[i] > 0 else "decreases_risk",
+            }
+        )
 
     base_val = explainer.expected_value
     base_val_float = float(base_val if np.isscalar(base_val) else base_val[0])

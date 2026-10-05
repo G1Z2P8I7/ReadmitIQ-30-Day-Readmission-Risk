@@ -17,9 +17,11 @@ from sklearn.metrics import (
 logger = logging.getLogger(__name__)
 
 
-def compute_ece(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10, strategy: str = "uniform") -> float:
+def compute_ece(
+    y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10, strategy: str = "uniform"
+) -> float:
     """Computes Expected Calibration Error (ECE) across probability bins.
-    
+
     strategy='uniform' partitions [0, 1] into equal-width bins.
     """
     y_true = np.asarray(y_true)
@@ -57,7 +59,7 @@ def compute_capacity_metrics(
     k_percents: list[int] | None = None,
 ) -> list[dict]:
     """Computes capacity-based intervention metrics.
-    
+
     Sorts patients descending by predicted risk (stable sort for ties),
     flags the top ceil(K% * n), and computes Recall, Precision, Lift, and Flagged Count.
     """
@@ -88,15 +90,17 @@ def compute_capacity_metrics(
         # Cutoff threshold (minimum probability in flagged group)
         threshold_at_k = float(y_prob[sort_order[n_flagged - 1]])
 
-        results.append({
-            "k_percent": k,
-            "n_flagged": n_flagged,
-            "threshold": threshold_at_k,
-            "positives_captured": positives_flagged,
-            "recall": float(recall),
-            "precision": float(precision),
-            "lift": float(lift),
-        })
+        results.append(
+            {
+                "k_percent": k,
+                "n_flagged": n_flagged,
+                "threshold": threshold_at_k,
+                "positives_captured": positives_flagged,
+                "recall": float(recall),
+                "precision": float(precision),
+                "lift": float(lift),
+            }
+        )
 
     return results
 

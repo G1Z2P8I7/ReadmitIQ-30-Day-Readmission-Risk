@@ -22,11 +22,13 @@ def compute_odds_ratios(lr_model, feature_names: list[str]) -> pd.DataFrame:
     coef = lr_model.coef_[0]
     odds_ratios = np.exp(coef)
 
-    df_or = pd.DataFrame({
-        "feature": feature_names,
-        "coefficient": coef,
-        "odds_ratio": odds_ratios,
-    })
+    df_or = pd.DataFrame(
+        {
+            "feature": feature_names,
+            "coefficient": coef,
+            "odds_ratio": odds_ratios,
+        }
+    )
     # Sort by distance from 1.0 (magnitude of association)
     df_or["abs_log_or"] = np.abs(df_or["coefficient"])
     df_or = df_or.sort_values(by="abs_log_or", ascending=False).drop(columns=["abs_log_or"])
@@ -68,11 +70,10 @@ def plot_waterfall_explanation(
     max_display: int = 10,
 ):
     """Generates and saves a clean SHAP waterfall plot for a single patient."""
-    plt.figure(figsize=(9, 5), dpi=150)
+    plt.figure(figsize=(11, 5), dpi=150)
     shap.plots.waterfall(explanation, max_display=max_display, show=False)
-    plt.title(f"Clinical Risk Factors Attribution: Patient {patient_label}", fontsize=11, fontweight="bold", pad=15)
-    plt.tight_layout()
-    plt.savefig(save_path)
+    plt.title(f"SHAP Waterfall: {patient_label}", fontsize=11, fontweight="bold", pad=15)
+    plt.savefig(save_path, bbox_inches="tight", dpi=150)
     plt.close()
     logger.info(f"Saved waterfall plot to {save_path}")
 
@@ -129,27 +130,30 @@ def run_explainability_step(config_dir: str = "configs"):
     shap_values_sub = explainer.shap_values(X_sub)
     shap_explanation = shap.Explanation(
         values=shap_values_sub,
-        base_values=explainer.expected_value if np.isscalar(explainer.expected_value) else explainer.expected_value[0],
+        base_values=explainer.expected_value
+        if np.isscalar(explainer.expected_value)
+        else explainer.expected_value[0],
         data=X_sub,
         feature_names=clean_feature_names,
     )
 
     # Global Beeswarm Plot
     logger.info("Generating SHAP summary beeswarm plot...")
-    plt.figure(figsize=(10, 8), dpi=150)
+    plt.figure(figsize=(11, 8), dpi=150)
     shap.plots.beeswarm(shap_explanation, max_display=15, show=False)
-    plt.title("SHAP Global Feature Importance (Impact on Log-Odds of Readmission)", fontsize=11, fontweight="bold")
+    plt.title("SHAP Global Feature Importance (Impact on Log-Odds)", fontsize=11, fontweight="bold")
     plt.xlabel("SHAP Value (impact on model log-odds output)", fontsize=10)
-    plt.tight_layout()
     beeswarm_path = figures_dir / "shap_summary_xgb.png"
-    plt.savefig(beeswarm_path)
+    plt.savefig(beeswarm_path, bbox_inches="tight", dpi=150)
     plt.close()
     logger.info(f"Saved SHAP beeswarm plot to {beeswarm_path}")
 
     # 4. SHAP Attribution Stability Check
     logger.info("Evaluating SHAP attribution stability across bootstrap resamples...")
     stability_corr = compute_shap_stability(explainer, X_val, n_runs=5, sample_size=500, seed=seed)
-    logger.info(f"SHAP Attribution Stability Score (Spearman Rank Correlation): {stability_corr:.4f}")
+    logger.info(
+        f"SHAP Attribution Stability Score (Spearman Rank Correlation): {stability_corr:.4f}"
+    )
 
     # 5. Local Patient Explanations (3 Case Studies)
     # Case A: True Positive (readmitted == 1, high predicted risk)
@@ -164,9 +168,13 @@ def run_explainability_step(config_dir: str = "configs"):
     tn_idx = tn_candidates[0] if len(tn_candidates) > 0 else 2
 
     cases = [
-        ("Case_A_TruePositive", tp_idx, f"High Risk Flagged (Prob: {probs_val[tp_idx]:.1%}, Actual: Readmitted)"),
-        ("Case_B_FalseNegative", fn_idx, f"Missed Low-Risk (Prob: {probs_val[fn_idx]:.1%}, Actual: Readmitted)"),
-        ("Case_C_LowRiskBaseline", tn_idx, f"Low Risk Discharged (Prob: {probs_val[tn_idx]:.1%}, Actual: No Readmit)"),
+        ("Case_A_TruePositive", tp_idx, f"Case A - High Risk (Prob: {probs_val[tp_idx]:.1%})"),
+        (
+            "Case_B_FalseNegative",
+            fn_idx,
+            f"Case B - False Negative (Prob: {probs_val[fn_idx]:.1%})",
+        ),
+        ("Case_C_LowRiskBaseline", tn_idx, f"Case C - Low Risk (Prob: {probs_val[tn_idx]:.1%})"),
     ]
 
     for filename, idx, desc in cases:
@@ -174,7 +182,9 @@ def run_explainability_step(config_dir: str = "configs"):
         sv = explainer.shap_values(patient_row)
         exp_single = shap.Explanation(
             values=sv[0],
-            base_values=explainer.expected_value if np.isscalar(explainer.expected_value) else explainer.expected_value[0],
+            base_values=explainer.expected_value
+            if np.isscalar(explainer.expected_value)
+            else explainer.expected_value[0],
             data=patient_row[0],
             feature_names=clean_feature_names,
         )
@@ -202,21 +212,27 @@ def run_explainability_step(config_dir: str = "configs"):
     ]
 
     for rank, f_idx in enumerate(top_shap_idx, start=1):
-        md_lines.append(f"{rank}. **`{clean_feature_names[f_idx]}`** (Mean |SHAP| = {mean_shap[f_idx]:.4f})")
+        md_lines.append(
+            f"{rank}. **`{clean_feature_names[f_idx]}`** (Mean |SHAP| = {mean_shap[f_idx]:.4f})"
+        )
 
-    md_lines.extend([
-        "\n## Odds Ratios from Interpretable Logistic Regression\n",
-        "Top clinical factors associated with higher readmission risk (Odds Ratio > 1.0):\n",
-        "| Feature | Coefficient (Log-Odds) | Odds Ratio (95% Wald CI) | Interpretation |",
-        "|---|---|---|---|",
-    ])
+    md_lines.extend(
+        [
+            "\n## Odds Ratios from Interpretable Logistic Regression\n",
+            "Top clinical factors associated with higher readmission risk (Odds Ratio > 1.0):\n",
+            "| Feature | Coefficient (Log-Odds) | Odds Ratio (95% Wald CI) | Interpretation |",
+            "|---|---|---|---|",
+        ]
+    )
 
     for _, row in top_or_pos.iterrows():
         md_lines.append(
             f"| `{row['feature']}` | {row['coefficient']:+.4f} | {row['odds_ratio']:.2f}x | Associated with increased readmission risk |"
         )
 
-    md_lines.append("\nTop clinical factors associated with lower readmission risk (Odds Ratio < 1.0):\n")
+    md_lines.append(
+        "\nTop clinical factors associated with lower readmission risk (Odds Ratio < 1.0):\n"
+    )
     md_lines.append("| Feature | Coefficient (Log-Odds) | Odds Ratio | Interpretation |")
     md_lines.append("|---|---|---|---|")
     for _, row in top_or_neg.iterrows():
@@ -224,13 +240,15 @@ def run_explainability_step(config_dir: str = "configs"):
             f"| `{row['feature']}` | {row['coefficient']:+.4f} | {row['odds_ratio']:.2f}x | Associated with lower readmission risk |"
         )
 
-    md_lines.extend([
-        "\n## Clinical Case Studies (SHAP Waterfall Attributions)\n",
-        f"1. **Case A (True Positive - Flagged High Risk):** Patient probability = **{probs_val[tp_idx]:.1%}**. Major risk drivers identified by waterfall plot: prior inpatient encounters, extended length of stay, and polypharmacy.\n",
-        f"2. **Case B (False Negative - Clinical Blindspot):** Patient probability = **{probs_val[fn_idx]:.1%}** (actual readmitted within 30 days). Lack of prior utilization masked subtle diagnosis-specific risk factors.\n",
-        f"3. **Case C (True Negative - Routine Low Risk):** Patient probability = **{probs_val[tn_idx]:.1%}**. Zero prior visits and straightforward routine discharge to home drove negative SHAP values.\n",
-        "\nFigures generated under `reports/figures/`: `shap_summary_xgb.png`, `shap_waterfall_Case_A_TruePositive.png`, `shap_waterfall_Case_B_FalseNegative.png`, `shap_waterfall_Case_C_LowRiskBaseline.png`.",
-    ])
+    md_lines.extend(
+        [
+            "\n## Clinical Case Studies (SHAP Waterfall Attributions)\n",
+            f"1. **Case A (True Positive - Flagged High Risk):** Patient probability = **{probs_val[tp_idx]:.1%}**. Major risk drivers identified by waterfall plot: prior inpatient encounters, extended length of stay, and polypharmacy.\n",
+            f"2. **Case B (False Negative - Clinical Blindspot):** Patient probability = **{probs_val[fn_idx]:.1%}** (actual readmitted within 30 days). Lack of prior utilization masked subtle diagnosis-specific risk factors.\n",
+            f"3. **Case C (True Negative - Routine Low Risk):** Patient probability = **{probs_val[tn_idx]:.1%}**. Zero prior visits and straightforward routine discharge to home drove negative SHAP values.\n",
+            "\nFigures generated under `reports/figures/`: `shap_summary_xgb.png`, `shap_waterfall_Case_A_TruePositive.png`, `shap_waterfall_Case_B_FalseNegative.png`, `shap_waterfall_Case_C_LowRiskBaseline.png`.",
+        ]
+    )
 
     with open(reports_dir / "explainability.md", "w", encoding="utf-8") as f:
         f.write("\n".join(md_lines) + "\n")

@@ -15,8 +15,26 @@ def raw_sample_data():
     data = {
         "encounter_id": [101, 102, 103, 104, 105, 106, 107, 108],
         "patient_nbr": [1, 1, 2, 3, 4, 5, 6, 7],
-        "race": ["Caucasian", "Caucasian", "AfricanAmerican", "Hispanic", "Asian", "Other", "?", "Caucasian"],
-        "gender": ["Female", "Female", "Male", "Female", "Unknown/Invalid", "Male", "Female", "Male"],
+        "race": [
+            "Caucasian",
+            "Caucasian",
+            "AfricanAmerican",
+            "Hispanic",
+            "Asian",
+            "Other",
+            "?",
+            "Caucasian",
+        ],
+        "gender": [
+            "Female",
+            "Female",
+            "Male",
+            "Female",
+            "Unknown/Invalid",
+            "Male",
+            "Female",
+            "Male",
+        ],
         "discharge_disposition_id": [1, 1, 11, 6, 1, 13, 1, 3],  # 11 and 13 are expired/hospice
         "readmitted": ["<30", ">30", "<30", "NO", "<30", "<30", ">30", "<30"],
         "time_in_hospital": [3, 4, 2, 5, 1, 7, 2, 3],
@@ -25,7 +43,9 @@ def raw_sample_data():
 
 
 def test_label_encoding(raw_sample_data):
-    cohort_df, _ = build_cohort(raw_sample_data, exclude_disposition_ids=[11, 13], one_encounter_per_patient=False)
+    cohort_df, _ = build_cohort(
+        raw_sample_data, exclude_disposition_ids=[11, 13], one_encounter_per_patient=False
+    )
     # Check label mapping: <30 -> 1, >30 -> 0, NO -> 0
     assert set(cohort_df["readmit_30d"].unique()).issubset({0, 1})
     for _, row in cohort_df.iterrows():
@@ -36,7 +56,9 @@ def test_label_encoding(raw_sample_data):
 
 
 def test_cohort_excludes_expired_hospice(raw_sample_data):
-    cohort_df, _flow = build_cohort(raw_sample_data, exclude_disposition_ids=[11, 13], one_encounter_per_patient=True)
+    cohort_df, _flow = build_cohort(
+        raw_sample_data, exclude_disposition_ids=[11, 13], one_encounter_per_patient=True
+    )
     # Disposition ids 11 and 13 must not be present
     assert not cohort_df["discharge_disposition_id"].isin([11, 13]).any()
     # Invalid gender must not be present

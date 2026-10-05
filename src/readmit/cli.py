@@ -13,45 +13,63 @@ logging.basicConfig(
 )
 logger = logging.getLogger("cli")
 
+
 def cmd_data(args):
     from readmit.data import run_data_step
+
     return run_data_step(args)
+
 
 def cmd_features(args):
     from readmit.features import run_features_step
+
     return run_features_step(args)
+
 
 def cmd_train(args):
     from readmit.models import run_training_step
+
     run_training_step()
     return 0
 
+
 def cmd_evaluate(args):
     from readmit.calibration import run_calibration_step
+
     run_calibration_step()
     return 0
 
+
 def cmd_explain(args):
     from readmit.explain import run_explainability_step
+
     run_explainability_step()
     return 0
 
+
 def cmd_fairness(args):
     from readmit.fairness import run_fairness_step
+
     run_fairness_step()
     return 0
 
+
 def cmd_final(args):
     from readmit.final_eval import run_final_step
+
     return run_final_step(args)
+
 
 def cmd_app(args):
     cmd = [sys.executable, "-m", "streamlit", "run", "app/streamlit_app.py"]
     return subprocess.run(cmd, check=False).returncode
 
+
 def cmd_api(args):
     import uvicorn
+
     return uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
+
 
 def main():
     parser = argparse.ArgumentParser(description="ReadmitIQ CLI")
@@ -64,10 +82,14 @@ def main():
     parser_feat = subparsers.add_parser("features", help="Extract and prepare features")
     parser_feat.set_defaults(func=cmd_features)
 
-    parser_train = subparsers.add_parser("train", help="Train baselines, LR, XGBoost, imbalance ablation")
+    parser_train = subparsers.add_parser(
+        "train", help="Train baselines, LR, XGBoost, imbalance ablation"
+    )
     parser_train.set_defaults(func=cmd_train)
 
-    parser_eval = subparsers.add_parser("evaluate", help="Evaluate models, calibration, and capacity")
+    parser_eval = subparsers.add_parser(
+        "evaluate", help="Evaluate models, calibration, and capacity"
+    )
     parser_eval.set_defaults(func=cmd_evaluate)
 
     parser_expl = subparsers.add_parser("explain", help="SHAP and interpretability")
@@ -92,6 +114,7 @@ def main():
     else:
         parser.print_help()
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main() or 0)

@@ -33,12 +33,14 @@ def generate_data_quality_report(
         na_count = int(raw_df[col].isna().sum())
         tot = q_count + na_count
         if tot > 0:
-            missing_data.append({
-                "column": col,
-                "missing_count": tot,
-                "missing_pct": (tot / len(raw_df)) * 100,
-                "symbol": "?" if q_count > 0 else "NaN",
-            })
+            missing_data.append(
+                {
+                    "column": col,
+                    "missing_count": tot,
+                    "missing_pct": (tot / len(raw_df)) * 100,
+                    "symbol": "?" if q_count > 0 else "NaN",
+                }
+            )
     missing_df = pd.DataFrame(missing_data).sort_values("missing_count", ascending=False)
     missing_rows_md = ""
     for _, r in missing_df.iterrows():
@@ -57,10 +59,10 @@ Dataset: **UCI Diabetes 130-US Hospitals (1999-2008)**
 
 ## 1. High-Level Ingestion Statistics
 - **Raw Encounters**: {len(raw_df):,}
-- **Raw Unique Patients**: {raw_df['patient_nbr'].nunique():,}
+- **Raw Unique Patients**: {raw_df["patient_nbr"].nunique():,}
 - **Total Columns**: {len(raw_df.columns)}
 - **Filtered Primary Cohort**: {len(cohort_df):,} patients (one index encounter per patient, excluding expired/hospice)
-- **Primary Cohort 30-Day Readmission Prevalence**: **{cohort_prev:.2f}%** ({flow['readmit_30d_positives']:,} positives)
+- **Primary Cohort 30-Day Readmission Prevalence**: **{cohort_prev:.2f}%** ({flow["readmit_30d_positives"]:,} positives)
 
 ---
 
@@ -68,9 +70,9 @@ Dataset: **UCI Diabetes 130-US Hospitals (1999-2008)**
 
 | Class | Meaning | Raw Count | Raw Share | Cohort Mapping (`readmit_30d`) |
 |---|---|---|---|---|
-| `<30` | Readmitted within 30 days | {raw_target.get('<30', 0):,} | {(raw_target.get('<30', 0)/len(raw_df))*100:.2f}% | **1 (Positive Class)** |
-| `>30` | Readmitted after 30 days | {raw_target.get('>30', 0):,} | {(raw_target.get('>30', 0)/len(raw_df))*100:.2f}% | **0 (Negative Class)** |
-| `NO` | Not readmitted within window | {raw_target.get('NO', 0):,} | {(raw_target.get('NO', 0)/len(raw_df))*100:.2f}% | **0 (Negative Class)** |
+| `<30` | Readmitted within 30 days | {raw_target.get("<30", 0):,} | {(raw_target.get("<30", 0) / len(raw_df)) * 100:.2f}% | **1 (Positive Class)** |
+| `>30` | Readmitted after 30 days | {raw_target.get(">30", 0):,} | {(raw_target.get(">30", 0) / len(raw_df)) * 100:.2f}% | **0 (Negative Class)** |
+| `NO` | Not readmitted within window | {raw_target.get("NO", 0):,} | {(raw_target.get("NO", 0) / len(raw_df)) * 100:.2f}% | **0 (Negative Class)** |
 
 ---
 

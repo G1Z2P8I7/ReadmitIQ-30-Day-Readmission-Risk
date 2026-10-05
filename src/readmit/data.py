@@ -35,6 +35,7 @@ def download_raw(raw_dir: str = "data/raw") -> None:
         zf.extractall(target_dir)
     logger.info(f"Successfully extracted dataset to {target_dir}")
 
+
 def load_raw_data(raw_dir: str = "data/raw") -> tuple[pd.DataFrame, pathlib.Path]:
     target_dir = pathlib.Path(raw_dir)
     data_file = target_dir / "diabetic_data.csv"
@@ -45,6 +46,7 @@ def load_raw_data(raw_dir: str = "data/raw") -> tuple[pd.DataFrame, pathlib.Path
 
     df = pd.read_csv(data_file, low_memory=False)
     return df, mapping_file
+
 
 def build_cohort(
     df: pd.DataFrame,
@@ -65,7 +67,11 @@ def build_cohort(
     df_step1 = df[~mask_hospice].copy()
     flow["remaining_step1"] = len(df_step1)
 
-    mask_invalid_gender = df_step1["sender"] == "Unknown/Invalid" if "sender" in df_step1.columns else df_step1["gender"] == "Unknown/Invalid"
+    mask_invalid_gender = (
+        df_step1["sender"] == "Unknown/Invalid"
+        if "sender" in df_step1.columns
+        else df_step1["gender"] == "Unknown/Invalid"
+    )
     flow["excluded_invalid_gender"] = int(mask_invalid_gender.sum())
     df_step2 = df_step1[~mask_invalid_gender].copy()
     flow["remaining_step2"] = len(df_step2)
@@ -92,6 +98,7 @@ def build_cohort(
 
     return df_cohort, flow
 
+
 def save_cohort_flow_report(flow: dict, output_path: str = "reports/cohort_flow.md") -> None:
     p = pathlib.Path(output_path)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -114,19 +121,19 @@ Single source of truth for cohort filtering rules and attrition counts.
 
 | Step | Description | Rows Excluded | Encounters Remaining | Unique Patients |
 |---|---|---|---|---|
-| **0. Raw Ingestion** | UCI Diabetes 130-US Hospitals (1999–2008) | 0 | {flow['raw_encounters']:,} | {flow['raw_unique_patients']:,} |
-| **1. Hospice/Mortality** | Excluded discharge disposition IDs 11, 13, 14, 19, 20, 21 | {flow['excluded_expired_hospice']:,} | {flow['remaining_step1']:,} | {flow['remaining_step1']:,} |
-| **2. Gender Filter** | Excluded `gender == 'Unknown/Invalid'` | {flow['excluded_invalid_gender']:,} | {flow['remaining_step2']:,} | {flow['remaining_step2']:,} |
-| **3. Index Encounter** | Primary analysis: first encounter per patient (lowest `encounter_id`) | {flow['excluded_repeat_encounters']:,} | **{flow['final_cohort_encounters']:,}** | **{flow['final_cohort_patients']:,}** |
+| **0. Raw Ingestion** | UCI Diabetes 130-US Hospitals (1999–2008) | 0 | {flow["raw_encounters"]:,} | {flow["raw_unique_patients"]:,} |
+| **1. Hospice/Mortality** | Excluded discharge disposition IDs 11, 13, 14, 19, 20, 21 | {flow["excluded_expired_hospice"]:,} | {flow["remaining_step1"]:,} | {flow["remaining_step1"]:,} |
+| **2. Gender Filter** | Excluded `gender == 'Unknown/Invalid'` | {flow["excluded_invalid_gender"]:,} | {flow["remaining_step2"]:,} | {flow["remaining_step2"]:,} |
+| **3. Index Encounter** | Primary analysis: first encounter per patient (lowest `encounter_id`) | {flow["excluded_repeat_encounters"]:,} | **{flow["final_cohort_encounters"]:,}** | **{flow["final_cohort_patients"]:,}** |
 
 ---
 
 ## Final Cohort Target Summary
 
-- **Total Cohort Size**: **{flow['final_cohort_encounters']:,}** patients
-- **Positive Readmission Count (<30 days)**: **{flow['readmit_30d_positives']:,}**
+- **Total Cohort Size**: **{flow["final_cohort_encounters"]:,}** patients
+- **Positive Readmission Count (<30 days)**: **{flow["readmit_30d_positives"]:,}**
 - **Cohort Prevalence**: **{prev_pct:.4f}%** (~{prev_pct:.2f}%)
-- **Negative Count (>30 days or None)**: **{flow['final_cohort_encounters'] - flow['readmit_30d_positives']:,}** ({100 - prev_pct:.4f}%)
+- **Negative Count (>30 days or None)**: **{flow["final_cohort_encounters"] - flow["readmit_30d_positives"]:,}** ({100 - prev_pct:.4f}%)
 
 All numbers are measured directly from the verified raw dataset.
 """
@@ -215,12 +222,17 @@ def run_data_step(args=None) -> int:
     exclude_ids = cohort_cfg.get("exclude_disposition_ids", [11, 13, 14, 19, 20, 21])
     one_enc = cohort_cfg.get("one_encounter_per_patient", True)
 
-    cohort_df, flow = build_cohort(df, exclude_disposition_ids=exclude_ids, one_encounter_per_patient=one_enc)
-    logger.info(f"Built primary cohort: {len(cohort_df):,} encounters, prevalence: {flow['readmit_30d_prevalence']:.4%}")
+    cohort_df, flow = build_cohort(
+        df, exclude_disposition_ids=exclude_ids, one_encounter_per_patient=one_enc
+    )
+    logger.info(
+        f"Built primary cohort: {len(cohort_df):,} encounters, prevalence: {flow['readmit_30d_prevalence']:.4%}"
+    )
 
     save_cohort_flow_report(flow)
 
     from readmit.audit import generate_data_quality_report, generate_leakage_audit_report
+
     generate_data_quality_report(df, cohort_df, flow)
     generate_leakage_audit_report()
 

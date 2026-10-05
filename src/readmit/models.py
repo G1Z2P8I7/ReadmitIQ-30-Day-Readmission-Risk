@@ -142,18 +142,26 @@ def run_training_step(config_dir: str = "configs"):
         p_val_lr_none = lr_none.predict_proba(X_val)[:, 1]
         m_lr_none = compute_all_metrics(y_val, p_val_lr_none)
         log_params({"model": "LogisticRegression", "imbalance": "none", "C": lr_cfg.get("C", 1.0)})
-        log_metrics({"val_pr_auc": m_lr_none["pr_auc"], "val_roc_auc": m_lr_none["roc_auc"], "val_brier": m_lr_none["brier"]})
-        ablation_results.append({
-            "model": "Logistic Regression",
-            "imbalance_strategy": "None (unweighted)",
-            "pr_auc": m_lr_none["pr_auc"],
-            "roc_auc": m_lr_none["roc_auc"],
-            "brier": m_lr_none["brier"],
-            "ece": m_lr_none["ece"],
-            "recall_k20": m_lr_none["primary_capacity"]["recall"],
-            "precision_k20": m_lr_none["primary_capacity"]["precision"],
-            "lift_k20": m_lr_none["primary_capacity"]["lift"],
-        })
+        log_metrics(
+            {
+                "val_pr_auc": m_lr_none["pr_auc"],
+                "val_roc_auc": m_lr_none["roc_auc"],
+                "val_brier": m_lr_none["brier"],
+            }
+        )
+        ablation_results.append(
+            {
+                "model": "Logistic Regression",
+                "imbalance_strategy": "None (unweighted)",
+                "pr_auc": m_lr_none["pr_auc"],
+                "roc_auc": m_lr_none["roc_auc"],
+                "brier": m_lr_none["brier"],
+                "ece": m_lr_none["ece"],
+                "recall_k20": m_lr_none["primary_capacity"]["recall"],
+                "precision_k20": m_lr_none["primary_capacity"]["precision"],
+                "lift_k20": m_lr_none["primary_capacity"]["lift"],
+            }
+        )
 
     with start_run(run_name="XGB_unweighted"):
         xgb_none = train_xgboost(
@@ -162,18 +170,26 @@ def run_training_step(config_dir: str = "configs"):
         p_val_xgb_none = xgb_none.predict_proba(X_val)[:, 1]
         m_xgb_none = compute_all_metrics(y_val, p_val_xgb_none)
         log_params({"model": "XGBoost", "imbalance": "none"})
-        log_metrics({"val_pr_auc": m_xgb_none["pr_auc"], "val_roc_auc": m_xgb_none["roc_auc"], "val_brier": m_xgb_none["brier"]})
-        ablation_results.append({
-            "model": "XGBoost",
-            "imbalance_strategy": "None (unweighted)",
-            "pr_auc": m_xgb_none["pr_auc"],
-            "roc_auc": m_xgb_none["roc_auc"],
-            "brier": m_xgb_none["brier"],
-            "ece": m_xgb_none["ece"],
-            "recall_k20": m_xgb_none["primary_capacity"]["recall"],
-            "precision_k20": m_xgb_none["primary_capacity"]["precision"],
-            "lift_k20": m_xgb_none["primary_capacity"]["lift"],
-        })
+        log_metrics(
+            {
+                "val_pr_auc": m_xgb_none["pr_auc"],
+                "val_roc_auc": m_xgb_none["roc_auc"],
+                "val_brier": m_xgb_none["brier"],
+            }
+        )
+        ablation_results.append(
+            {
+                "model": "XGBoost",
+                "imbalance_strategy": "None (unweighted)",
+                "pr_auc": m_xgb_none["pr_auc"],
+                "roc_auc": m_xgb_none["roc_auc"],
+                "brier": m_xgb_none["brier"],
+                "ece": m_xgb_none["ece"],
+                "recall_k20": m_xgb_none["primary_capacity"]["recall"],
+                "precision_k20": m_xgb_none["primary_capacity"]["precision"],
+                "lift_k20": m_xgb_none["primary_capacity"]["lift"],
+            }
+        )
 
     # Strategy B: Cost-sensitive Class Weights (balanced / scale_pos_weight)
     with start_run(run_name="LR_class_weight"):
@@ -183,18 +199,26 @@ def run_training_step(config_dir: str = "configs"):
         p_val_lr_wt = lr_weighted.predict_proba(X_val)[:, 1]
         m_lr_wt = compute_all_metrics(y_val, p_val_lr_wt)
         log_params({"model": "LogisticRegression", "imbalance": "balanced_weights"})
-        log_metrics({"val_pr_auc": m_lr_wt["pr_auc"], "val_roc_auc": m_lr_wt["roc_auc"], "val_brier": m_lr_wt["brier"]})
-        ablation_results.append({
-            "model": "Logistic Regression",
-            "imbalance_strategy": "Class Weight (balanced)",
-            "pr_auc": m_lr_wt["pr_auc"],
-            "roc_auc": m_lr_wt["roc_auc"],
-            "brier": m_lr_wt["brier"],
-            "ece": m_lr_wt["ece"],
-            "recall_k20": m_lr_wt["primary_capacity"]["recall"],
-            "precision_k20": m_lr_wt["primary_capacity"]["precision"],
-            "lift_k20": m_lr_wt["primary_capacity"]["lift"],
-        })
+        log_metrics(
+            {
+                "val_pr_auc": m_lr_wt["pr_auc"],
+                "val_roc_auc": m_lr_wt["roc_auc"],
+                "val_brier": m_lr_wt["brier"],
+            }
+        )
+        ablation_results.append(
+            {
+                "model": "Logistic Regression",
+                "imbalance_strategy": "Class Weight (balanced)",
+                "pr_auc": m_lr_wt["pr_auc"],
+                "roc_auc": m_lr_wt["roc_auc"],
+                "brier": m_lr_wt["brier"],
+                "ece": m_lr_wt["ece"],
+                "recall_k20": m_lr_wt["primary_capacity"]["recall"],
+                "precision_k20": m_lr_wt["primary_capacity"]["precision"],
+                "lift_k20": m_lr_wt["primary_capacity"]["lift"],
+            }
+        )
 
     with start_run(run_name="XGB_scale_pos_weight"):
         xgb_weighted = train_xgboost(
@@ -202,19 +226,29 @@ def run_training_step(config_dir: str = "configs"):
         )
         p_val_xgb_wt = xgb_weighted.predict_proba(X_val)[:, 1]
         m_xgb_wt = compute_all_metrics(y_val, p_val_xgb_wt)
-        log_params({"model": "XGBoost", "imbalance": "scale_pos_weight", "scale_pos_weight": scale_weight})
-        log_metrics({"val_pr_auc": m_xgb_wt["pr_auc"], "val_roc_auc": m_xgb_wt["roc_auc"], "val_brier": m_xgb_wt["brier"]})
-        ablation_results.append({
-            "model": "XGBoost",
-            "imbalance_strategy": f"scale_pos_weight ({scale_weight:.2f})",
-            "pr_auc": m_xgb_wt["pr_auc"],
-            "roc_auc": m_xgb_wt["roc_auc"],
-            "brier": m_xgb_wt["brier"],
-            "ece": m_xgb_wt["ece"],
-            "recall_k20": m_xgb_wt["primary_capacity"]["recall"],
-            "precision_k20": m_xgb_wt["primary_capacity"]["precision"],
-            "lift_k20": m_xgb_wt["primary_capacity"]["lift"],
-        })
+        log_params(
+            {"model": "XGBoost", "imbalance": "scale_pos_weight", "scale_pos_weight": scale_weight}
+        )
+        log_metrics(
+            {
+                "val_pr_auc": m_xgb_wt["pr_auc"],
+                "val_roc_auc": m_xgb_wt["roc_auc"],
+                "val_brier": m_xgb_wt["brier"],
+            }
+        )
+        ablation_results.append(
+            {
+                "model": "XGBoost",
+                "imbalance_strategy": f"scale_pos_weight ({scale_weight:.2f})",
+                "pr_auc": m_xgb_wt["pr_auc"],
+                "roc_auc": m_xgb_wt["roc_auc"],
+                "brier": m_xgb_wt["brier"],
+                "ece": m_xgb_wt["ece"],
+                "recall_k20": m_xgb_wt["primary_capacity"]["recall"],
+                "precision_k20": m_xgb_wt["primary_capacity"]["precision"],
+                "lift_k20": m_xgb_wt["primary_capacity"]["lift"],
+            }
+        )
 
     # Strategy C: SMOTE Resampling on Train Split only
     logger.info("Applying SMOTE oversampling to training set only...")
@@ -223,23 +257,35 @@ def run_training_step(config_dir: str = "configs"):
 
     with start_run(run_name="LR_SMOTE"):
         lr_smote = train_logistic_regression(
-            X_train_smote, y_train_smote, class_weight=None, C=lr_cfg.get("C", 1.0), random_state=seed
+            X_train_smote,
+            y_train_smote,
+            class_weight=None,
+            C=lr_cfg.get("C", 1.0),
+            random_state=seed,
         )
         p_val_lr_smote = lr_smote.predict_proba(X_val)[:, 1]
         m_lr_smote = compute_all_metrics(y_val, p_val_lr_smote)
         log_params({"model": "LogisticRegression", "imbalance": "smote"})
-        log_metrics({"val_pr_auc": m_lr_smote["pr_auc"], "val_roc_auc": m_lr_smote["roc_auc"], "val_brier": m_lr_smote["brier"]})
-        ablation_results.append({
-            "model": "Logistic Regression",
-            "imbalance_strategy": "SMOTE Oversampling",
-            "pr_auc": m_lr_smote["pr_auc"],
-            "roc_auc": m_lr_smote["roc_auc"],
-            "brier": m_lr_smote["brier"],
-            "ece": m_lr_smote["ece"],
-            "recall_k20": m_lr_smote["primary_capacity"]["recall"],
-            "precision_k20": m_lr_smote["primary_capacity"]["precision"],
-            "lift_k20": m_lr_smote["primary_capacity"]["lift"],
-        })
+        log_metrics(
+            {
+                "val_pr_auc": m_lr_smote["pr_auc"],
+                "val_roc_auc": m_lr_smote["roc_auc"],
+                "val_brier": m_lr_smote["brier"],
+            }
+        )
+        ablation_results.append(
+            {
+                "model": "Logistic Regression",
+                "imbalance_strategy": "SMOTE Oversampling",
+                "pr_auc": m_lr_smote["pr_auc"],
+                "roc_auc": m_lr_smote["roc_auc"],
+                "brier": m_lr_smote["brier"],
+                "ece": m_lr_smote["ece"],
+                "recall_k20": m_lr_smote["primary_capacity"]["recall"],
+                "precision_k20": m_lr_smote["primary_capacity"]["precision"],
+                "lift_k20": m_lr_smote["primary_capacity"]["lift"],
+            }
+        )
 
     with start_run(run_name="XGB_SMOTE"):
         xgb_smote = train_xgboost(
@@ -248,18 +294,26 @@ def run_training_step(config_dir: str = "configs"):
         p_val_xgb_smote = xgb_smote.predict_proba(X_val)[:, 1]
         m_xgb_smote = compute_all_metrics(y_val, p_val_xgb_smote)
         log_params({"model": "XGBoost", "imbalance": "smote"})
-        log_metrics({"val_pr_auc": m_xgb_smote["pr_auc"], "val_roc_auc": m_xgb_smote["roc_auc"], "val_brier": m_xgb_smote["brier"]})
-        ablation_results.append({
-            "model": "XGBoost",
-            "imbalance_strategy": "SMOTE Oversampling",
-            "pr_auc": m_xgb_smote["pr_auc"],
-            "roc_auc": m_xgb_smote["roc_auc"],
-            "brier": m_xgb_smote["brier"],
-            "ece": m_xgb_smote["ece"],
-            "recall_k20": m_xgb_smote["primary_capacity"]["recall"],
-            "precision_k20": m_xgb_smote["primary_capacity"]["precision"],
-            "lift_k20": m_xgb_smote["primary_capacity"]["lift"],
-        })
+        log_metrics(
+            {
+                "val_pr_auc": m_xgb_smote["pr_auc"],
+                "val_roc_auc": m_xgb_smote["roc_auc"],
+                "val_brier": m_xgb_smote["brier"],
+            }
+        )
+        ablation_results.append(
+            {
+                "model": "XGBoost",
+                "imbalance_strategy": "SMOTE Oversampling",
+                "pr_auc": m_xgb_smote["pr_auc"],
+                "roc_auc": m_xgb_smote["roc_auc"],
+                "brier": m_xgb_smote["brier"],
+                "ece": m_xgb_smote["ece"],
+                "recall_k20": m_xgb_smote["primary_capacity"]["recall"],
+                "precision_k20": m_xgb_smote["primary_capacity"]["precision"],
+                "lift_k20": m_xgb_smote["primary_capacity"]["lift"],
+            }
+        )
 
     # Save primary candidate models to artifacts
     joblib.dump(lr_none, artifacts_dir / "logistic_regression.joblib")
@@ -283,18 +337,20 @@ def run_training_step(config_dir: str = "configs"):
     # Determine best discrimination model by PR-AUC
     best_row = df_res.sort_values(by="pr_auc", ascending=False).iloc[0]
 
-    md_report.extend([
-        "\n## Analysis & Findings\n",
-        f"1. **Primary Metric Performance (PR-AUC):** The top performing model by PR-AUC is **{best_row['model']} ({best_row['imbalance_strategy']})** with PR-AUC = **{best_row['pr_auc']:.4f}** and ROC-AUC = **{best_row['roc_auc']:.4f}**.",
-        "2. **Impact of Imbalance Reweighting:**",
-        "   - Class weighting and SMOTE significantly alter the predicted probability distribution, shifting raw outputs upward. While rank ordering (ROC-AUC / capacity ranking) remains comparable, raw Brier score and ECE degrade sharply because probabilities no longer reflect natural clinical prevalence (~8.98%).",
-        "   - Consequently, when reweighting or SMOTE is used, post-hoc recalibration (Platt scaling or isotonic regression) is strictly required before deploying probabilities into clinical workflows.",
-        "3. **Capacity Decision Support (K=20%):**",
-        f"   - When targeting the highest risk quintile (K=20%), {best_row['model']} captures **{best_row['recall_k20'] * 100:.2f}%** of all 30-day readmissions, achieving a precision of **{best_row['precision_k20'] * 100:.2f}%** and a lift of **{best_row['lift_k20']:.2f}x** over baseline hospital prevalence.",
-        "\n## Decision for Downstream Pipeline\n",
-        "- **Chosen Primary Architecture:** XGBoost with natural prevalence weighting as the uncalibrated base estimator, passing forward to Milestone M5 for Platt scaling and Isotonic calibration.",
-        "- **Baseline Comparison:** Both LR and XGBoost substantially outperform the uninformative prevalence baseline (PR-AUC 0.0897) and the prior inpatient clinical rule heuristic (PR-AUC 0.1201).",
-    ])
+    md_report.extend(
+        [
+            "\n## Analysis & Findings\n",
+            f"1. **Primary Metric Performance (PR-AUC):** The top performing model by PR-AUC is **{best_row['model']} ({best_row['imbalance_strategy']})** with PR-AUC = **{best_row['pr_auc']:.4f}** and ROC-AUC = **{best_row['roc_auc']:.4f}**.",
+            "2. **Impact of Imbalance Reweighting:**",
+            "   - Class weighting and SMOTE significantly alter the predicted probability distribution, shifting raw outputs upward. While rank ordering (ROC-AUC / capacity ranking) remains comparable, raw Brier score and ECE degrade sharply because probabilities no longer reflect natural clinical prevalence (~8.98%).",
+            "   - Consequently, when reweighting or SMOTE is used, post-hoc recalibration (Platt scaling or isotonic regression) is strictly required before deploying probabilities into clinical workflows.",
+            "3. **Capacity Decision Support (K=20%):**",
+            f"   - When targeting the highest risk quintile (K=20%), {best_row['model']} captures **{best_row['recall_k20'] * 100:.2f}%** of all 30-day readmissions, achieving a precision of **{best_row['precision_k20'] * 100:.2f}%** and a lift of **{best_row['lift_k20']:.2f}x** over baseline hospital prevalence.",
+            "\n## Decision for Downstream Pipeline\n",
+            "- **Chosen Primary Architecture:** XGBoost with natural prevalence weighting as the uncalibrated base estimator, passing forward to Milestone M5 for Platt scaling and Isotonic calibration.",
+            "- **Baseline Comparison:** Both LR and XGBoost substantially outperform the uninformative prevalence baseline (PR-AUC 0.0897) and the prior inpatient clinical rule heuristic (PR-AUC 0.1201).",
+        ]
+    )
 
     with open(reports_dir / "model_comparison.md", "w", encoding="utf-8") as f:
         f.write("\n".join(md_report) + "\n")

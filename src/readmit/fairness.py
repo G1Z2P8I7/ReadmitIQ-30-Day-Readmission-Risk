@@ -116,11 +116,15 @@ def run_fairness_step(config_dir: str = "configs"):
     before_audit = {}
     before_gaps = {}
     for attr_name, series in audit_attributes.items():
-        df_grp = compute_group_fairness_table(y_val, y_pred_unmitigated, series, min_group_n=min_group_n)
+        df_grp = compute_group_fairness_table(
+            y_val, y_pred_unmitigated, series, min_group_n=min_group_n
+        )
         gaps = compute_parity_gaps(df_grp)
         before_audit[attr_name] = df_grp
         before_gaps[attr_name] = gaps
-        logger.info(f"Unmitigated {attr_name}: TPR gap = {gaps['tpr_gap']:.4f}, FPR gap = {gaps['fpr_gap']:.4f}")
+        logger.info(
+            f"Unmitigated {attr_name}: TPR gap = {gaps['tpr_gap']:.4f}, FPR gap = {gaps['fpr_gap']:.4f}"
+        )
 
     # =========================================================
     # 2. Fairlearn Mitigation: Post-processing ThresholdOptimizer
@@ -148,11 +152,15 @@ def run_fairness_step(config_dir: str = "configs"):
     after_audit = {}
     after_gaps = {}
     for attr_name, series in audit_attributes.items():
-        df_grp = compute_group_fairness_table(y_val, y_pred_mitigated, series, min_group_n=min_group_n)
+        df_grp = compute_group_fairness_table(
+            y_val, y_pred_mitigated, series, min_group_n=min_group_n
+        )
         gaps = compute_parity_gaps(df_grp)
         after_audit[attr_name] = df_grp
         after_gaps[attr_name] = gaps
-        logger.info(f"Mitigated {attr_name}: TPR gap = {gaps['tpr_gap']:.4f}, FPR gap = {gaps['fpr_gap']:.4f}")
+        logger.info(
+            f"Mitigated {attr_name}: TPR gap = {gaps['tpr_gap']:.4f}, FPR gap = {gaps['fpr_gap']:.4f}"
+        )
 
     # Overall Metrics Before vs After
     overall_recall_before = float(true_positive_rate(y_val, y_pred_unmitigated))
@@ -186,35 +194,41 @@ def run_fairness_step(config_dir: str = "configs"):
         df_b = before_audit[attr_name]
         df_a = after_audit[attr_name]
 
-        md_lines.extend([
-            f"\n### {attr_title}\n",
-            "**Before Mitigation (Capacity K=20% Global Threshold):**\n",
-            "| Subgroup | Sample Size (N) | TPR (Recall) | FPR (False Alarm) | Precision | Selection Rate | Confidence Note |",
-            "|---|---|---|---|---|---|---|",
-        ])
+        md_lines.extend(
+            [
+                f"\n### {attr_title}\n",
+                "**Before Mitigation (Capacity K=20% Global Threshold):**\n",
+                "| Subgroup | Sample Size (N) | TPR (Recall) | FPR (False Alarm) | Precision | Selection Rate | Confidence Note |",
+                "|---|---|---|---|---|---|---|",
+            ]
+        )
         for grp, r in df_b.iterrows():
             flag = "⚠️ Low N (<500)" if r["low_confidence"] else "Adequate N"
             md_lines.append(
                 f"| `{grp}` | {int(r['n']):,} | {r['tpr'] * 100:.2f}% | {r['fpr'] * 100:.2f}% | {r['precision'] * 100:.2f}% | {r['selection_rate'] * 100:.2f}% | {flag} |"
             )
 
-        md_lines.extend([
-            "\n**After Mitigation (Equalized Odds Threshold Optimization):**\n",
-            "| Subgroup | Sample Size (N) | TPR (Recall) | FPR (False Alarm) | Precision | Selection Rate | Disparity Change |",
-            "|---|---|---|---|---|---|---|",
-        ])
+        md_lines.extend(
+            [
+                "\n**After Mitigation (Equalized Odds Threshold Optimization):**\n",
+                "| Subgroup | Sample Size (N) | TPR (Recall) | FPR (False Alarm) | Precision | Selection Rate | Disparity Change |",
+                "|---|---|---|---|---|---|---|",
+            ]
+        )
         for grp, r in df_a.iterrows():
             tpr_diff = (r["tpr"] - df_b.loc[grp, "tpr"]) * 100
             md_lines.append(
                 f"| `{grp}` | {int(r['n']):,} | {r['tpr'] * 100:.2f}% | {r['fpr'] * 100:.2f}% | {r['precision'] * 100:.2f}% | {r['selection_rate'] * 100:.2f}% | TPR Δ {tpr_diff:+.2f}% |"
             )
 
-    md_lines.extend([
-        "\n## Clinical and Operational Trade-Off Discussion\n",
-        "1. **The Parity vs. Capacity Trade-Off:** Equalized odds optimization successfully tightens disparity gaps across demographic groups. However, enforcing parity across groups requires raising selection rates and lowering classification thresholds for historically underserved populations. This shifts total flagged volume and impacts overall precision.",
-        "2. **Capacity Realities:** In clinical practice, if follow-up resources (nurse outreach calls, home health visits) are strictly budgeted at 20% of discharged patients, a group-differentiated threshold changes who receives care within that 20% quota.",
-        "3. **Conclusion & Recommendation:** We recommend deploying the calibrated continuous risk score as decision support, displaying subgroup-stratified recall metrics to clinicians, and pairing post-processing mitigation with care team review rather than uncritical automated prioritization.",
-    ])
+    md_lines.extend(
+        [
+            "\n## Clinical and Operational Trade-Off Discussion\n",
+            "1. **The Parity vs. Capacity Trade-Off:** Equalized odds optimization successfully tightens disparity gaps across demographic groups. However, enforcing parity across groups requires raising selection rates and lowering classification thresholds for historically underserved populations. This shifts total flagged volume and impacts overall precision.",
+            "2. **Capacity Realities:** In clinical practice, if follow-up resources (nurse outreach calls, home health visits) are strictly budgeted at 20% of discharged patients, a group-differentiated threshold changes who receives care within that 20% quota.",
+            "3. **Conclusion & Recommendation:** We recommend deploying the calibrated continuous risk score as decision support, displaying subgroup-stratified recall metrics to clinicians, and pairing post-processing mitigation with care team review rather than uncritical automated prioritization.",
+        ]
+    )
 
     with open(reports_dir / "fairness_before_after.md", "w", encoding="utf-8") as f:
         f.write("\n".join(md_lines) + "\n")

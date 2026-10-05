@@ -66,11 +66,15 @@ def run_final_step(args=None, config_dir: str = "configs"):
             f"Test set evaluation already executed and locked at {lock_file}. "
             "To re-run, you must pass --force."
         )
-        print(f"ERROR: Final evaluation already completed and locked ({lock_file}). Use --force to override.")
+        print(
+            f"ERROR: Final evaluation already completed and locked ({lock_file}). Use --force to override."
+        )
         sys.exit(1)
 
     if lock_file.exists() and force:
-        logger.warning("FORCED RE-RUN of final evaluation step! Logging deviation to docs/decisions.md...")
+        logger.warning(
+            "FORCED RE-RUN of final evaluation step! Logging deviation to docs/decisions.md..."
+        )
         decisions_file = pathlib.Path("docs/decisions.md")
         timestamp = datetime.now(UTC).isoformat()
         with open(decisions_file, "a", encoding="utf-8") as f:
@@ -109,9 +113,7 @@ def run_final_step(args=None, config_dir: str = "configs"):
 
     # Pre-generate paired bootstrap resample indices across all models
     rng = np.random.RandomState(seed)
-    bootstrap_indices = [
-        rng.randint(0, n_test, size=n_test) for _ in range(bootstrap_resamples)
-    ]
+    bootstrap_indices = [rng.randint(0, n_test, size=n_test) for _ in range(bootstrap_resamples)]
 
     def paired_bootstrap(y_true, y_prob, metric_fn):
         point = float(metric_fn(y_true, y_prob))
@@ -158,19 +160,25 @@ def run_final_step(args=None, config_dir: str = "configs"):
     fairness_test_before = {}
     fairness_test_before_gaps = {}
     for attr_name, series in [("race_group", s_race), ("gender", s_gender), ("age_band", s_age)]:
-        df_grp = compute_group_fairness_table(y_test, y_pred_unmitigated, series, min_group_n=min_group_n)
+        df_grp = compute_group_fairness_table(
+            y_test, y_pred_unmitigated, series, min_group_n=min_group_n
+        )
         gaps = compute_parity_gaps(df_grp)
         fairness_test_before[attr_name] = df_grp.to_dict(orient="index")
         fairness_test_before_gaps[attr_name] = gaps
 
     # Mitigated Predictions on Test using fitted ThresholdOptimizer
     logger.info("Applying Fairlearn ThresholdOptimizer to test set...")
-    y_pred_mitigated = fairness_optimizer.predict(test_df, sensitive_features=s_race, random_state=seed)
+    y_pred_mitigated = fairness_optimizer.predict(
+        test_df, sensitive_features=s_race, random_state=seed
+    )
 
     fairness_test_after = {}
     fairness_test_after_gaps = {}
     for attr_name, series in [("race_group", s_race), ("gender", s_gender), ("age_band", s_age)]:
-        df_grp = compute_group_fairness_table(y_test, y_pred_mitigated, series, min_group_n=min_group_n)
+        df_grp = compute_group_fairness_table(
+            y_test, y_pred_mitigated, series, min_group_n=min_group_n
+        )
         gaps = compute_parity_gaps(df_grp)
         fairness_test_after[attr_name] = df_grp.to_dict(orient="index")
         fairness_test_after_gaps[attr_name] = gaps
@@ -256,9 +264,17 @@ def run_final_step(args=None, config_dir: str = "configs"):
     print("\n=======================================================")
     print("M8 FINAL TEST EVALUATION COMPLETE AND FROZEN")
     print(f"Metrics written to: {metrics_file}")
-    print(f"Primary XGBoost Calibrated Test PR-AUC: {pr_xgb['value']:.4f} [95% CI: {pr_xgb['ci95'][0]:.4f} - {pr_xgb['ci95'][1]:.4f}]")
-    print(f"Primary XGBoost Calibrated Test ROC-AUC: {roc_xgb['value']:.4f} [95% CI: {roc_xgb['ci95'][0]:.4f} - {roc_xgb['ci95'][1]:.4f}]")
-    print(f"Test Recall @ K=20%: {cap_metrics[2]['recall'] * 100:.2f}%, Precision: {cap_metrics[2]['precision'] * 100:.2f}%, Lift: {cap_metrics[2]['lift']:.2f}x")
-    print(f"Race FPR Disparity: {fairness_test_before_gaps['race_group']['fpr_gap'] * 100:.2f}% -> {fairness_test_after_gaps['race_group']['fpr_gap'] * 100:.2f}%")
+    print(
+        f"Primary XGBoost Calibrated Test PR-AUC: {pr_xgb['value']:.4f} [95% CI: {pr_xgb['ci95'][0]:.4f} - {pr_xgb['ci95'][1]:.4f}]"
+    )
+    print(
+        f"Primary XGBoost Calibrated Test ROC-AUC: {roc_xgb['value']:.4f} [95% CI: {roc_xgb['ci95'][0]:.4f} - {roc_xgb['ci95'][1]:.4f}]"
+    )
+    print(
+        f"Test Recall @ K=20%: {cap_metrics[2]['recall'] * 100:.2f}%, Precision: {cap_metrics[2]['precision'] * 100:.2f}%, Lift: {cap_metrics[2]['lift']:.2f}x"
+    )
+    print(
+        f"Race FPR Disparity: {fairness_test_before_gaps['race_group']['fpr_gap'] * 100:.2f}% -> {fairness_test_after_gaps['race_group']['fpr_gap'] * 100:.2f}%"
+    )
     print("=======================================================\n")
     return 0
