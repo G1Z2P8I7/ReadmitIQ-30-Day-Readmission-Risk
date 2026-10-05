@@ -38,7 +38,8 @@ def cmd_explain(args):
 
 def cmd_fairness(args):
     from readmit.fairness import run_fairness_step
-    return run_fairness_step(args)
+    run_fairness_step()
+    return 0
 
 def cmd_final(args):
     from readmit.final_eval import run_final_step

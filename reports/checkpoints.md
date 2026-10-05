@@ -11,7 +11,7 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 - [x] **M4: LR and XGBoost, imbalance ablation**
 - [x] **M5: Calibration and thresholds**
 - [x] **M6: Explainability (SHAP & odds ratios)**
-- [ ] **M7: Fairness audit and mitigation**
+- [x] **M7: Fairness audit and mitigation**
 - [ ] **M8: Final test evaluation (locked)**
 - [ ] **M9: Engineering layer (API, Dashboard, Docker)**
 - [ ] **M10: Write-up and executive report**
@@ -170,7 +170,37 @@ uff check src tests: Passed (0 errors).
   - `pytest -v`: 12 passed.
 - **Assumptions made:**
   - SHAP values computed on uncalibrated tree log-odds output per standard practice, representing additive statistical associations with zero causal claims.
-- **Open issues:** None. Proceeding autonomously to M7 (Fairness Audit & Fairlearn Mitigation).
+- **Open issues:** None.
+
+---
+
+## Checkpoint 6: M7 Fairness Audit & Mitigation Complete
+- **What was built:**
+  - `src/readmit/fairness.py`: Demographic subgroup audit evaluating True Positive Rate (Recall), False Positive Rate (False Alarm), Precision, and Selection Rate across Race/Ethnicity, Gender, and Age bands using Fairlearn `MetricFrame`.
+  - Disparity gap metrics computed with sample size safeguards (groups with N < 500 flagged as low-confidence).
+  - Algorithmic fairness mitigation using Fairlearn `ThresholdOptimizer` with `equalized_odds` constraint fitted on validation set demographic groups.
+  - Generated report: `reports/fairness_before_after.md` documenting trade-offs, group-specific thresholds, and clinical resource allocation implications.
+  - Artifact saved: `artifacts/fairness_optimizer.joblib`.
+  - Unit test in `tests/test_features.py`: `test_fairness_gaps_toy` asserts TPR/FPR/selection-rate gap math against hand-computed ground truth.
+- **Key measured numbers (Validation Set: N=10,497):**
+  - **Before Mitigation (Primary Capacity K=20%, Global Cutoff 10.77%):**
+    - Race Group Disparities: TPR Gap = **2.58%** (African American 44.97%, Caucasian 47.55%), FPR Gap = **4.85%** (African American 21.61%, Caucasian 26.46%).
+    - Gender Disparities: TPR Gap = **5.89%** (Female 49.41%, Male 43.52%), FPR Gap = **4.56%** (Female 27.35%, Male 22.80%).
+    - Age Band Disparities: TPR Gap = **22.23%** (Age 30-49 33.01%, Age 70+ 55.24%), FPR Gap = **23.68%**.
+    - Overall Performance: Recall = **46.71%**, Precision = **15.43%**, Selection Rate = **27.16%**.
+  - **After Mitigation (Fairlearn Equalized Odds Post-Processing on Race):**
+    - Race Group Disparities: TPR Gap = **2.78%**, FPR Gap reduced dramatically from 4.85% down to **0.11%** (African American FPR 23.16%, Caucasian FPR 23.26%).
+    - Overall Performance: Recall = **43.95%**, Precision = **15.71%**, Selection Rate = **25.10%**.
+  - **Trade-Off Finding:** Equalized odds enforcement virtually eliminated the false alarm disparity across major racial cohorts (gap decreased from 4.85% to 0.11%) with an overall recall shift of only -2.76% and slightly improved precision (+0.28%).
+- **Commands run & results:**
+  - `python -m readmit.cli fairness`: Executed in ~2.5s. All subgroup metrics computed and written to `reports/fairness_before_after.md`.
+  - `ruff check src tests`: Passed (0 errors).
+  - `pytest -v`: 13 passed in 2.35s.
+- **Assumptions made:**
+  - Race and gender remain strictly excluded from model features and are evaluated purely as demographic audit attributes.
+  - Groups with N < 500 (e.g., Asian N=80, Hispanic N=242, Other N=156 in validation split) are explicitly annotated with sample size warnings.
+- **Open issues:** None. Proceeding autonomously to M8 (Final Test Set Evaluation & Metrics Freezing).
+
 
 
 

@@ -212,3 +212,25 @@ def test_calibration_monotonic():
     cal_iso = iso.predict_proba(scores)[:, 1]
     assert np.all(np.diff(cal_iso) >= 0.0), "Isotonic calibrator did not produce monotonically non-decreasing probabilities"
 
+
+def test_fairness_gaps_toy():
+    """TPR/FPR/selection-rate gaps match hand-computed values on a toy frame."""
+    from readmit.fairness import compute_group_fairness_table, compute_parity_gaps
+
+    # Group A: 2 patients, y_true=[1, 0], y_pred=[1, 0] -> TPR=1.0, FPR=0.0, Sel=0.5
+    # Group B: 2 patients, y_true=[1, 0], y_pred=[0, 1] -> TPR=0.0, FPR=1.0, Sel=0.5
+    y_true = np.array([1, 0, 1, 0])
+    y_pred = np.array([1, 0, 0, 1])
+    groups = pd.Series(["A", "A", "B", "B"])
+
+    df_grp = compute_group_fairness_table(y_true, y_pred, groups, min_group_n=1)
+    gaps = compute_parity_gaps(df_grp)
+
+    # TPR gap: |1.0 - 0.0| = 1.0
+    assert abs(gaps["tpr_gap"] - 1.0) < 1e-6
+    # FPR gap: |0.0 - 1.0| = 1.0
+    assert abs(gaps["fpr_gap"] - 1.0) < 1e-6
+    # Selection rate gap: |0.5 - 0.5| = 0.0
+    assert abs(gaps["selection_rate_gap"] - 0.0) < 1e-6
+
+

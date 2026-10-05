@@ -14,9 +14,9 @@
 
 | Capacity Tier (Top K%) | Patients Flagged | Risk Cutoff Threshold | Captured Readmissions | Recall (Sensitivity) | Precision (PPV) | Lift over Baseline |
 |---|---|---|---|---|---|---|
-| Top 5% | 525 | 20.81% | 132 | 14.01% | 25.14% | 2.80x |
-| Top 10% | 1,050 | 15.38% | 226 | 23.99% | 21.52% | 2.40x |
-| Top 20% | 2,100 | 10.77% | 362 | 38.43% | 17.24% | 1.92x |
+| Top 5% | 525 | 20.81% | 137 | 14.54% | 26.10% | 2.91x |
+| Top 10% | 1,050 | 15.38% | 228 | 24.20% | 21.71% | 2.42x |
+| Top 20% | 2,100 | 10.77% | 358 | 38.00% | 17.05% | 1.90x |
 
 ## Cost-Ratio Utility Optimization (Illustrative Assumption)
 
@@ -37,6 +37,6 @@
 |---|---|---|---|
 | Raw XGBoost | 0.0792 | 0.0014 | 0.1716 |
 | Platt Scaling (Sigmoid) | 0.0792 | 0.0037 | 0.1716 |
-| Isotonic Regression | 0.0788 | 0.0000 | 0.1708 |
+| Isotonic Regression | 0.0788 | 0.0000 | 0.1671 |
 
 **Selected Calibration Method:** `isotonic`. Preserves monotonicity and output stability.

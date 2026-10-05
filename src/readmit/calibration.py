@@ -39,8 +39,8 @@ class PlattCalibrator(BaseEstimator, ClassifierMixin):
     def predict_proba(self, probs: np.ndarray) -> np.ndarray:
         probs_clipped = np.clip(probs, self.eps, 1.0 - self.eps)
         logits = logit(probs_clipped).reshape(-1, 1)
-        p1 = self.lr_.predict_proba(logits)[:, 1]
-        return np.column_stack([1.0 - p1, p1])
+        p1 = self.lr_.predict_proba(logits)[:, 1].astype(np.float64)
+        return np.column_stack([1.0 - p1, p1]).astype(np.float64)
 
 
 class IsotonicCalibrator(BaseEstimator, ClassifierMixin):
@@ -51,12 +51,12 @@ class IsotonicCalibrator(BaseEstimator, ClassifierMixin):
 
     def fit(self, probs: np.ndarray, y: np.ndarray):
         self.iso_ = IsotonicRegression(out_of_bounds="clip", y_min=0.0, y_max=1.0)
-        self.iso_.fit(probs, y)
+        self.iso_.fit(np.asarray(probs, dtype=np.float64), y)
         return self
 
     def predict_proba(self, probs: np.ndarray) -> np.ndarray:
-        p1 = self.iso_.predict(probs)
-        return np.column_stack([1.0 - p1, p1])
+        p1 = self.iso_.predict(np.asarray(probs, dtype=np.float64)).astype(np.float64)
+        return np.column_stack([1.0 - p1, p1]).astype(np.float64)
 
 
 class FullCalibratedPipeline(BaseEstimator, ClassifierMixin):
