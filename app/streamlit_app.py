@@ -1,7 +1,11 @@
-"""Streamlit Interactive Clinical Decision Support Dashboard for ReadmitIQ."""
+"""Streamlit Interactive Clinical Decision Support Dashboard for ReadmitIQ.
+
+Dark-mode glassmorphism design with teal/coral/gold accent palette.
+"""
 
 import json
 import pathlib
+import sys
 
 import matplotlib
 
@@ -9,15 +13,41 @@ matplotlib.use("Agg")
 import pandas as pd
 import streamlit as st
 
+# Ensure local app directory is on path for style import
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+
+from style import (
+    ACCENT_BLUE,
+    ACCENT_CORAL,
+    ACCENT_GOLD,
+    ACCENT_TEAL,
+    danger_banner,
+    glass_card,
+    gradient_divider,
+    hero_section,
+    info_banner,
+    inject_css,
+    metric_card,
+    risk_badge,
+    safeguard_card,
+    section_header,
+    success_banner,
+    warning_banner,
+)
+
 from readmit.inference import explain, load_inference_artifacts, predict
 
 st.set_page_config(
-    page_title="ReadmitIQ - 30-Day Hospital Readmission Risk System",
+    page_title="ReadmitIQ — 30-Day Readmission Risk",
     page_icon="🏥",
     layout="wide",
 )
 
+# ── Inject global CSS theme ──────────────────────────────
+st.markdown(inject_css(), unsafe_allow_html=True)
 
+
+# ── Cached loaders ───────────────────────────────────────
 @st.cache_resource
 def get_cached_inference():
     return load_inference_artifacts()
@@ -25,140 +55,222 @@ def get_cached_inference():
 
 @st.cache_data
 def get_cached_metrics():
-    metrics_path = pathlib.Path("reports/metrics.json")
-    if metrics_path.exists():
-        with open(metrics_path, encoding="utf-8") as f:
+    p = pathlib.Path("reports/metrics.json")
+    if p.exists():
+        with open(p, encoding="utf-8") as f:
             return json.load(f)
     return {}
 
 
 @st.cache_data
 def get_cached_fairness_details():
-    fairness_path = pathlib.Path("reports/fairness_details.json")
-    if fairness_path.exists():
-        with open(fairness_path, encoding="utf-8") as f:
+    p = pathlib.Path("reports/fairness_details.json")
+    if p.exists():
+        with open(p, encoding="utf-8") as f:
             return json.load(f)
     return {}
 
 
-# Load cached model assets, metrics, and fairness audit
 pipeline, explainer, feature_names, prevalence = get_cached_inference()
 metrics_data = get_cached_metrics()
 fairness_details = get_cached_fairness_details()
 
-# Sidebar: Governance, Operational Assumptions & Limitations
-st.sidebar.title("🏥 ReadmitIQ")
-st.sidebar.caption("Clinical Decision Support & Fairness Audit")
-
-st.sidebar.markdown("---")
-st.sidebar.subheader("⚙️ Operational Assumptions")
+# ── Sidebar ──────────────────────────────────────────────
 st.sidebar.markdown(
-    "- **Prediction Point:** Hospital Discharge.\n"
-    "- **Capacity Tier:** Top 20% of discharged patients targeted for post-discharge intervention.\n"
-    "- **Illustrative Cost Ratio:** 5:1 (Missing a readmission assumed 5x more costly than false alarm).\n"
-    "- **Primary Cohort:** 69,987 index admissions (mortality/hospice excluded)."
+    """
+    <div style="text-align:center; padding: 1rem 0 0.5rem 0;">
+        <span style="font-size:2.2rem;">🏥</span>
+        <div style="font-size:1.4rem; font-weight:800; color:#F0F2F6;
+                     letter-spacing:1px; margin-top:0.3rem;">
+            Readmit<span style="color:#00D4AA;">IQ</span>
+        </div>
+        <div style="font-size:0.75rem; color:#8892B0; margin-top:0.15rem;">
+            Clinical Decision Support &amp; Fairness Audit
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("⚠️ Governance & Disclaimers")
+st.sidebar.markdown(gradient_divider(), unsafe_allow_html=True)
+st.sidebar.markdown("##### ⚙️ Operational Assumptions")
 st.sidebar.markdown(
-    "- **Non-Causal Tool:** Statistical risk prioritization only; does not recommend clinical treatment.\n"
-    "- **Protected Attributes:** Race and gender are strictly excluded from predictive features and tracked purely for demographic parity audit.\n"
-    "- **Low N Warning:** Demographic subgroups with N < 500 carry wider bootstrap uncertainty intervals."
+    "- **Prediction Point:** Hospital Discharge\n"
+    "- **Capacity Tier:** Top 20% targeted\n"
+    "- **Cost Ratio:** 5:1 (illustrative)\n"
+    "- **Cohort:** 69,987 index encounters"
 )
 
-# Navigation
+st.sidebar.markdown(gradient_divider(), unsafe_allow_html=True)
+st.sidebar.markdown("##### ⚠️ Governance")
+st.sidebar.markdown(
+    "- Non-causal risk prioritization only\n"
+    "- Race & gender excluded from features\n"
+    "- Low-N groups (< 500) flagged"
+)
+
+st.sidebar.markdown(gradient_divider(), unsafe_allow_html=True)
+
+PAGE_OPTIONS = [
+    "Executive Summary",
+    "Patient Risk Scoring",
+    "SHAP Interpretability",
+    "Fairness by Group",
+    "Model Comparison & Capacity",
+]
+PAGE_LABELS = {
+    "Executive Summary": "📊 Executive Summary",
+    "Patient Risk Scoring": "👤 Patient Risk Scoring",
+    "SHAP Interpretability": "🔍 SHAP Interpretability",
+    "Fairness by Group": "⚖️ Fairness by Group",
+    "Model Comparison & Capacity": "📈 Model Comparison & Capacity",
+}
+
 page = st.sidebar.radio(
-    "Navigation",
-    [
-        "Executive Summary",
-        "Patient Risk Scoring",
-        "SHAP Interpretability",
-        "Fairness by Group",
-        "Model Comparison & Capacity",
-    ],
+    "Navigate",
+    PAGE_OPTIONS,
+    format_func=lambda x: PAGE_LABELS.get(x, x),
 )
 
-# =========================================================
-# Page 1: Executive Summary
-# =========================================================
+
+# ═════════════════════════════════════════════════════════
+# PAGE 1 — Executive Summary
+# ═════════════════════════════════════════════════════════
 if page == "Executive Summary":
-    st.title("🏥 Executive Summary: ReadmitIQ Decision Support")
     st.markdown(
-        "ReadmitIQ is an algorithmic decision-support pipeline built on the UCI 130-US Hospitals dataset, "
-        "designed to prioritize post-discharge nurse outreach and care transitions under strict operational capacity constraints."
+        hero_section(
+            "30-Day Readmission Risk Prediction",
+            "AI-driven decision support for post-discharge nurse outreach, "
+            "built on the UCI 130-US Hospitals dataset with calibration, "
+            "SHAP explainability, and fairness audit.",
+        ),
+        unsafe_allow_html=True,
     )
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric(
-            label="Cohort Size (Index Encounters)",
-            value=f"{metrics_data.get('cohort', {}).get('n_patients', 69987):,}",
-            help="Unique index patients after removing mortality/hospice exclusions",
-        )
-    with col2:
-        st.metric(
-            label="Baseline Readmission Rate",
-            value=f"{metrics_data.get('cohort', {}).get('prevalence', 0.0899) * 100:.2f}%",
-            help="Observed 30-day unplanned readmission rate",
-        )
-    with col3:
-        xgb_test = metrics_data.get("models", {}).get("xgboost_calibrated", {})
-        pr_val = xgb_test.get("pr_auc", {}).get("value", 0.1385)
-        st.metric(
-            label="Primary Model PR-AUC (Test)",
-            value=f"{pr_val:.4f}",
-            delta="+54% over prevalence floor",
-            help="Precision-Recall AUC on untouched 10,500 patient test set",
-        )
-    with col4:
-        cap_20 = xgb_test.get("capacity", [{}, {}, {}])[2]
-        st.metric(
-            label="Recall @ Top 20% Capacity",
-            value=f"{cap_20.get('recall', 0.3453) * 100:.1f}%",
-            delta=f"{cap_20.get('lift', 1.73):.2f}x Lift",
-            help="Share of total readmissions captured within top 20% capacity",
-        )
+    # ── KPI Metric Cards ─────────────────────────────────
+    cohort = metrics_data.get("cohort", {})
+    xgb = metrics_data.get("models", {}).get("xgboost_calibrated", {})
+    cap_20 = xgb.get("capacity", [{}, {}, {}])[2] if len(xgb.get("capacity", [])) >= 3 else {}
 
-    st.markdown("---")
-    st.subheader("Key Architectural Safeguards")
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
     with c1:
         st.markdown(
-            "#### 🔒 Leakage Prevention\n"
-            "- Patient-grouped split (0 overlap between train, val, test).\n"
-            "- Discharge prediction point: zero future encounter features.\n"
-            "- Preprocessors fitted strictly on training data."
+            metric_card(
+                "👥",
+                f"{cohort.get('n_patients', 69987):,}",
+                "Index Patients",
+                ACCENT_TEAL,
+            ),
+            unsafe_allow_html=True,
         )
     with c2:
         st.markdown(
-            "#### 🎯 Probability Calibration\n"
-            "- Isotonic post-hoc calibration on validation split.\n"
-            "- ECE reduced to **0.0062** on test set.\n"
-            "- Reliable absolute risk estimates for clinical trust."
+            metric_card(
+                "📉",
+                f"{cohort.get('prevalence', 0.0899) * 100:.2f}%",
+                "Baseline Readmission",
+                ACCENT_CORAL,
+            ),
+            unsafe_allow_html=True,
         )
     with c3:
+        pr_val = xgb.get("pr_auc", {}).get("value", 0.1385)
         st.markdown(
-            "#### ⚖️ Demographic Fairness\n"
-            "- Race and gender preserved exclusively for audit.\n"
-            "- Fairlearn Equalized Odds post-processing.\n"
-            "- False alarm disparity gap reduced from **5.07% to 0.17%**."
+            metric_card(
+                "🎯",
+                f"{pr_val:.4f}",
+                "PR-AUC (Test Set)",
+                ACCENT_GOLD,
+                delta="+54% over prevalence floor",
+                delta_type="positive",
+            ),
+            unsafe_allow_html=True,
+        )
+    with c4:
+        recall_val = cap_20.get("recall", 0.3453)
+        lift_val = cap_20.get("lift", 1.73)
+        st.markdown(
+            metric_card(
+                "📋",
+                f"{recall_val * 100:.1f}%",
+                "Recall @ Top 20%",
+                ACCENT_BLUE,
+                delta=f"{lift_val:.2f}x Lift",
+                delta_type="positive",
+            ),
+            unsafe_allow_html=True,
         )
 
-# =========================================================
-# Page 2: Patient Risk Scoring
-# =========================================================
-elif page == "Patient Risk Scoring":
-    st.title("👤 Individual Patient Readmission Risk Scoring")
+    st.markdown(gradient_divider(), unsafe_allow_html=True)
+
+    # ── Key Safeguards ───────────────────────────────────
     st.markdown(
-        "Evaluate an individual patient encounter at discharge to determine predicted risk, "
-        "relative risk compared to hospital average, and clinical risk tier."
+        section_header("🛡️", "Key Architectural Safeguards"),
+        unsafe_allow_html=True,
+    )
+
+    s1, s2, s3 = st.columns(3)
+    with s1:
+        st.markdown(
+            safeguard_card(
+                "🔒",
+                "Leakage Prevention",
+                [
+                    "Patient-grouped split (0 overlap)",
+                    "Discharge prediction point only",
+                    "Preprocessors fitted on train only",
+                ],
+            ),
+            unsafe_allow_html=True,
+        )
+    with s2:
+        st.markdown(
+            safeguard_card(
+                "🎯",
+                "Probability Calibration",
+                [
+                    "Isotonic post-hoc calibration",
+                    f"ECE: <strong>{xgb.get('ece', 0.0062):.4f}</strong> on test",
+                    "Reliable absolute risk estimates",
+                ],
+            ),
+            unsafe_allow_html=True,
+        )
+    with s3:
+        st.markdown(
+            safeguard_card(
+                "⚖️",
+                "Demographic Fairness",
+                [
+                    "Race & gender excluded from model",
+                    "Fairlearn Equalized Odds mitigation",
+                    "FPR gap: <strong>5.07% → 0.17%</strong>",
+                ],
+            ),
+            unsafe_allow_html=True,
+        )
+
+
+# ═════════════════════════════════════════════════════════
+# PAGE 2 — Patient Risk Scoring
+# ═════════════════════════════════════════════════════════
+elif page == "Patient Risk Scoring":
+    st.markdown(
+        hero_section(
+            "Individual Patient Risk Scoring",
+            "Evaluate a patient encounter at discharge to determine predicted risk, "
+            "relative risk vs hospital average, and clinical risk tier.",
+        ),
+        unsafe_allow_html=True,
     )
 
     with st.form("patient_form"):
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown("**Admission & Stay**")
+            st.markdown(
+                section_header("🏨", "Admission & Stay"),
+                unsafe_allow_html=True,
+            )
             adm_type = st.selectbox(
                 "Admission Type",
                 [1, 2, 3, 7],
@@ -166,7 +278,7 @@ elif page == "Patient Risk Scoring":
                     1: "Emergency",
                     2: "Urgent",
                     3: "Elective",
-                    7: "Trauma/Other",
+                    7: "Trauma / Other",
                 }.get(x, str(x)),
             )
             adm_src = st.selectbox(
@@ -203,7 +315,10 @@ elif page == "Patient Risk Scoring":
             )
 
         with col2:
-            st.markdown("**Prior Utilization & Demographics**")
+            st.markdown(
+                section_header("📋", "Prior Utilization & Demographics"),
+                unsafe_allow_html=True,
+            )
             age = st.selectbox(
                 "Age Decade",
                 [
@@ -221,27 +336,33 @@ elif page == "Patient Risk Scoring":
                 index=6,
             )
             race = st.selectbox(
-                "Race (Audit Only)",
+                "Race (Audit Only — not a model feature)",
                 ["Caucasian", "AfricanAmerican", "Hispanic", "Asian", "Other", "Unknown"],
             )
-            gender = st.selectbox("Gender (Audit Only)", ["Female", "Male"])
-            n_inpatient = st.number_input("Prior Inpatient Admissions (Past Year)", 0, 15, 1)
-            n_outpatient = st.number_input("Prior Outpatient Visits (Past Year)", 0, 20, 0)
-            n_emergency = st.number_input("Prior Emergency Visits (Past Year)", 0, 15, 0)
+            gender = st.selectbox(
+                "Gender (Audit Only — not a model feature)",
+                ["Female", "Male"],
+            )
+            n_inpatient = st.number_input("Prior Inpatient Admissions", 0, 15, 1)
+            n_outpatient = st.number_input("Prior Outpatient Visits", 0, 20, 0)
+            n_emergency = st.number_input("Prior Emergency Visits", 0, 15, 0)
 
         with col3:
-            st.markdown("**Clinical & Diabetes Management**")
-            num_meds = st.slider("Number of Medications Administered", 1, 50, 14)
-            num_labs = st.slider("Number of Lab Procedures", 1, 100, 42)
+            st.markdown(
+                section_header("💊", "Clinical & Diabetes Management"),
+                unsafe_allow_html=True,
+            )
+            num_meds = st.slider("Medications Administered", 1, 50, 14)
+            num_labs = st.slider("Lab Procedures", 1, 100, 42)
             diag_1 = st.text_input("Primary Diagnosis (ICD-9)", "414")
-            a1c = st.selectbox("HbA1c Test Result", ["None", "Norm", ">7", ">8"])
-            glu = st.selectbox("Max Glucose Serum Test", ["None", "Norm", ">200", ">300"])
+            a1c = st.selectbox("HbA1c Result", ["None", "Norm", ">7", ">8"])
+            glu = st.selectbox("Max Glucose Serum", ["None", "Norm", ">200", ">300"])
             insulin = st.selectbox("Insulin Management", ["No", "Steady", "Up", "Down"], index=1)
             chg = st.selectbox("Diabetes Med Changed", ["No", "Ch"])
 
-        submit = st.form_submit_button("Calculate Readmission Risk")
+        submit = st.form_submit_button("🔬  Calculate Readmission Risk")
 
-    # Patient evaluation payload
+    # ── Build payload ─────────────────────────────────────
     patient_payload = {
         "admission_type_id": adm_type,
         "admission_source_id": adm_src,
@@ -274,56 +395,88 @@ elif page == "Patient Risk Scoring":
         "insulin": insulin,
     }
 
-    # Evaluate prediction and local explainability
     result = predict(patient_payload)
     prob = result["risk_probability"]
     mult = result["risk_vs_average"]
     band = result["risk_band"]
     expl_data = explain(patient_payload, top_k=6)
 
-    st.markdown("---")
-    st.subheader("🎯 Patient Risk Evaluation Results")
+    st.markdown(gradient_divider(), unsafe_allow_html=True)
+
     if submit:
         st.toast("Calculated real-time readmission risk!", icon="🏥")
 
+    # ── Risk Results Cards ────────────────────────────────
+    st.markdown(
+        section_header("🎯", "Patient Risk Evaluation"),
+        unsafe_allow_html=True,
+    )
+
     rc1, rc2, rc3 = st.columns(3)
     with rc1:
-        st.metric(
-            label="Predicted 30-Day Risk",
-            value=f"{prob * 100:.1f}%",
-            help="Calibrated probability of unplanned readmission within 30 days of discharge",
+        st.markdown(
+            metric_card(
+                "📊",
+                f"{prob * 100:.1f}%",
+                "Predicted 30-Day Risk",
+                ACCENT_CORAL if prob >= 0.1077 else ACCENT_TEAL,
+            ),
+            unsafe_allow_html=True,
         )
     with rc2:
-        st.metric(
-            label="Relative Risk vs Hospital Baseline",
-            value=f"{mult:.2f}x Average",
-            delta=f"{mult - 1.0:+.2f}x baseline",
-            delta_color="inverse",
-            help="Patient risk divided by baseline hospital prevalence (~8.99%)",
+        delta_type = "negative" if mult > 1.5 else ("neutral" if mult > 1.0 else "positive")
+        st.markdown(
+            metric_card(
+                "📈",
+                f"{mult:.2f}x",
+                "Relative Risk vs Average",
+                ACCENT_GOLD,
+                delta=f"{mult - 1.0:+.2f}x baseline",
+                delta_type=delta_type,
+            ),
+            unsafe_allow_html=True,
         )
     with rc3:
-        st.metric(
-            label="Clinical Risk Band",
-            value=band,
-            help="Operational risk tier for care management prioritization",
+        st.markdown(
+            f"""
+            <div class="metric-card" style="padding-top:1.75rem;">
+                <div class="metric-label" style="margin-bottom:0.75rem;">CLINICAL RISK BAND</div>
+                {risk_badge(band)}
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-    # Actionable clinical threshold recommendation
+    # ── Actionable recommendation ─────────────────────────
     if prob >= 0.1077:
-        st.error(
-            "🚨 **Recommended Operational Action:** Patient falls within the **Top 20% Capacity Tier** (Risk ≥ 10.77%). "
-            "Flag for nurse outreach telephone call within 48 hours and transitional care medication reconciliation."
+        st.markdown(
+            danger_banner(
+                "<strong>🚨 Recommended Action:</strong> Patient falls within the "
+                "<strong>Top 20% Capacity Tier</strong> (Risk ≥ 10.77%). "
+                "Flag for nurse outreach within 48 hours and transitional care "
+                "medication reconciliation."
+            ),
+            unsafe_allow_html=True,
         )
     else:
-        st.success(
-            "✅ **Standard Clinical Pathway:** Patient risk is within standard discharge limits (< 10.77%). "
-            "Standard discharge instructions and scheduled outpatient follow-up recommended."
+        st.markdown(
+            success_banner(
+                "<strong>✅ Standard Pathway:</strong> Patient risk within standard "
+                "discharge limits (< 10.77%). Standard discharge instructions and "
+                "scheduled outpatient follow-up recommended."
+            ),
+            unsafe_allow_html=True,
         )
 
-    # Local SHAP Explainability Breakdown
-    st.markdown("#### Clinical Feature Drivers for this Encounter")
-    st.caption(
-        "Top SHAP contributions impacting the uncalibrated model log-odds for this specific encounter:"
+    # ── SHAP local explainability ─────────────────────────
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(
+        section_header(
+            "🧬",
+            "Clinical Feature Drivers",
+            "Top SHAP contributions (uncalibrated log-odds) for this encounter:",
+        ),
+        unsafe_allow_html=True,
     )
 
     top_conts = expl_data.get("top_contributions", [])
@@ -338,8 +491,8 @@ elif page == "Patient Risk Scoring":
         df_expl["SHAP Contribution"] = df_expl["shap_value"].apply(lambda v: f"{v:+.4f}")
         df_expl["Clinical Impact"] = df_expl["direction"].map(
             {
-                "increases_risk": "🔺 Increases Readmission Risk",
-                "decreases_risk": "🔻 Decreases Readmission Risk",
+                "increases_risk": "🔺 Increases Risk",
+                "decreases_risk": "🔻 Decreases Risk",
             }
         )
         st.dataframe(
@@ -348,131 +501,191 @@ elif page == "Patient Risk Scoring":
             hide_index=True,
         )
 
-# =========================================================
-# Page 3: SHAP Interpretability
-# =========================================================
+
+# ═════════════════════════════════════════════════════════
+# PAGE 3 — SHAP Interpretability
+# ═════════════════════════════════════════════════════════
 elif page == "SHAP Interpretability":
-    st.title("🔍 SHAP Interpretability & Feature Attributions")
     st.markdown(
-        "Explanations quantify statistical contributions to model log-odds output. "
-        "Attributions are observational and non-causal."
+        hero_section(
+            "SHAP Interpretability & Feature Attributions",
+            "Explanations quantify statistical contributions to model log-odds. "
+            "All attributions are observational and non-causal.",
+        ),
+        unsafe_allow_html=True,
     )
 
-    t1, t2 = st.tabs(["Global Feature Importance (Beeswarm)", "Case Study Waterfalls"])
+    t1, t2 = st.tabs(["🌐 Global Feature Importance", "🔬 Case Study Waterfalls"])
+
     with t1:
-        st.subheader("Global Population Attributions")
+        st.markdown(
+            section_header(
+                "📊",
+                "Global Population Attributions",
+                "SHAP beeswarm showing feature impact distribution across the validation cohort:",
+            ),
+            unsafe_allow_html=True,
+        )
         beeswarm_img = pathlib.Path("reports/figures/shap_summary_xgb.png")
         if beeswarm_img.exists():
             st.image(
                 str(beeswarm_img),
-                caption="SHAP Summary Beeswarm: Impact on 30-Day Readmission Risk Log-Odds",
+                caption="SHAP Beeswarm: Impact on 30-Day Readmission Risk (Log-Odds)",
                 use_container_width=True,
             )
         else:
-            st.info("Run `python -m readmit.cli explain` to generate global SHAP plots.")
+            st.markdown(
+                info_banner(
+                    "Run <code>python -m readmit.cli explain</code> to generate SHAP plots."
+                ),
+                unsafe_allow_html=True,
+            )
 
     with t2:
-        st.subheader("Clinical Case Studies")
+        st.markdown(
+            section_header("🔬", "Clinical Case Studies"),
+            unsafe_allow_html=True,
+        )
         c1, c2, c3 = st.columns(3)
-        with c1:
-            st.markdown("#### Case A: True Positive (High Risk)")
-            img_a = pathlib.Path("reports/figures/shap_waterfall_Case_A_TruePositive.png")
-            if img_a.exists():
-                st.image(str(img_a), use_container_width=True)
-        with c2:
-            st.markdown("#### Case B: False Negative (Clinical Blindspot)")
-            img_b = pathlib.Path("reports/figures/shap_waterfall_Case_B_FalseNegative.png")
-            if img_b.exists():
-                st.image(str(img_b), use_container_width=True)
-        with c3:
-            st.markdown("#### Case C: True Negative (Low Risk)")
-            img_c = pathlib.Path("reports/figures/shap_waterfall_Case_C_LowRiskBaseline.png")
-            if img_c.exists():
-                st.image(str(img_c), use_container_width=True)
+        cases = [
+            ("Case A: True Positive", "shap_waterfall_Case_A_TruePositive.png", "High Risk"),
+            (
+                "Case B: False Negative",
+                "shap_waterfall_Case_B_FalseNegative.png",
+                "Clinical Blindspot",
+            ),
+            ("Case C: True Negative", "shap_waterfall_Case_C_LowRiskBaseline.png", "Low Risk"),
+        ]
+        for col, (label, fname, subtitle) in zip([c1, c2, c3], cases):
+            with col:
+                st.markdown(
+                    glass_card(
+                        f"<h4 style='color:#F0F2F6; margin:0 0 0.5rem 0;'>{label}</h4>"
+                        f"<p style='color:#8892B0; font-size:0.8rem; margin:0;'>{subtitle}</p>"
+                    ),
+                    unsafe_allow_html=True,
+                )
+                img_path = pathlib.Path(f"reports/figures/{fname}")
+                if img_path.exists():
+                    st.image(str(img_path), use_container_width=True)
 
-# =========================================================
-# Page 4: Fairness by Group
-# =========================================================
+
+# ═════════════════════════════════════════════════════════
+# PAGE 4 — Fairness by Group
+# ═════════════════════════════════════════════════════════
 elif page == "Fairness by Group":
-    st.title("⚖️ Demographic Fairness Audit & Mitigation")
     st.markdown(
-        "Evaluating model parity across demographic subgroups before and after post-processing mitigation "
-        "using Fairlearn `ThresholdOptimizer(equalized_odds)`."
+        hero_section(
+            "Demographic Fairness Audit & Mitigation",
+            "Evaluating model parity across demographic subgroups before and after "
+            "Fairlearn ThresholdOptimizer (Equalized Odds) mitigation.",
+        ),
+        unsafe_allow_html=True,
     )
 
     gaps_before = metrics_data.get("fairness_gaps", {}).get("before", {}).get("race_group", {})
     gaps_after = metrics_data.get("fairness_gaps", {}).get("after", {}).get("race_group", {})
 
-    c1, c2 = st.columns(2)
+    # ── Disparity Gap Cards ──────────────────────────────
+    c1, c2, c3, c4 = st.columns(4)
+    fpr_before = gaps_before.get("fpr_gap", 0.0507)
+    fpr_after = gaps_after.get("fpr_gap", 0.0017)
+    tpr_before = gaps_before.get("tpr_gap", 0.0610)
+    tpr_after = gaps_after.get("tpr_gap", 0.0385)
+
     with c1:
-        st.subheader("Unmitigated Race Disparity (K=20% Global Threshold)")
-        st.metric(
-            label="False Positive Rate Gap",
-            value=f"{gaps_before.get('fpr_gap', 0.0507) * 100:.2f}%",
-            help="Difference between maximum and minimum subgroup false positive rates before mitigation",
-        )
-        st.metric(
-            label="True Positive Rate Gap",
-            value=f"{gaps_before.get('tpr_gap', 0.0610) * 100:.2f}%",
-            help="Difference between maximum and minimum subgroup recall rates before mitigation",
+        st.markdown(
+            metric_card(
+                "🔴",
+                f"{fpr_before * 100:.2f}%",
+                "FPR Gap (Before)",
+                ACCENT_CORAL,
+            ),
+            unsafe_allow_html=True,
         )
     with c2:
-        st.subheader("Mitigated Race Disparity (Equalized Odds)")
-        st.metric(
-            label="False Positive Rate Gap",
-            value=f"{gaps_after.get('fpr_gap', 0.0017) * 100:.2f}%",
-            delta=f"{(gaps_after.get('fpr_gap', 0.0017) - gaps_before.get('fpr_gap', 0.0507)) * 100:.2f}%",
-            delta_color="inverse",
-            help="Reduced by 96.6% to achieve near-zero false alarm disparity across racial groups",
+        st.markdown(
+            metric_card(
+                "🟢",
+                f"{fpr_after * 100:.2f}%",
+                "FPR Gap (After)",
+                ACCENT_TEAL,
+                delta=f"{(fpr_after - fpr_before) * 100:+.2f}%",
+                delta_type="positive",
+            ),
+            unsafe_allow_html=True,
         )
-        st.metric(
-            label="True Positive Rate Gap",
-            value=f"{gaps_after.get('tpr_gap', 0.0385) * 100:.2f}%",
-            delta=f"{(gaps_after.get('tpr_gap', 0.0385) - gaps_before.get('tpr_gap', 0.0610)) * 100:.2f}%",
-            delta_color="inverse",
-            help="Reduced by 36.9% to tighten recall disparities across racial groups",
+    with c3:
+        st.markdown(
+            metric_card(
+                "🔴",
+                f"{tpr_before * 100:.2f}%",
+                "TPR Gap (Before)",
+                ACCENT_CORAL,
+            ),
+            unsafe_allow_html=True,
+        )
+    with c4:
+        st.markdown(
+            metric_card(
+                "🟡",
+                f"{tpr_after * 100:.2f}%",
+                "TPR Gap (After)",
+                ACCENT_GOLD,
+                delta=f"{(tpr_after - tpr_before) * 100:+.2f}%",
+                delta_type="positive",
+            ),
+            unsafe_allow_html=True,
         )
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    # Trade-off statement
+    # ── Trade-off statement ──────────────────────────────
     tradeoff_text = fairness_details.get(
         "tradeoff_statement",
-        "What was given up in mitigation: To achieve near-zero false positive rate disparity across racial groups "
-        "(FPR gap reduced from 5.07% to 0.17%, a 96.6% disparity reduction), the system accepted a 3.07% drop in overall "
-        "recall (from 43.43% to 40.36%) and a 0.30% drop in precision (from 14.43% to 14.12%). Overall selection rate dropped "
-        "from 27.07% to 25.70% (144 fewer patients flagged). In clinical terms, 29 fewer readmissions were flagged in order "
-        "to eliminate disparate false-alarm burdens across protected groups.",
+        "To achieve near-zero FPR disparity (5.07% → 0.17%, 96.6% reduction), "
+        "the system accepted a 3.07% recall drop (43.43% → 40.36%) and 0.30% "
+        "precision drop. 29 fewer readmissions flagged to eliminate disparate "
+        "false-alarm burdens across protected groups.",
     )
-    st.info(
-        f"**⚖️ Clinical & Operational Trade-Off: What Was Given Up in Mitigation**\n\n{tradeoff_text}"
+    st.markdown(
+        warning_banner(f"<strong>⚖️ Trade-Off:</strong> {tradeoff_text}"),
+        unsafe_allow_html=True,
     )
 
+    st.markdown(gradient_divider(), unsafe_allow_html=True)
+
+    # ── Tabs ─────────────────────────────────────────────
     fairness_tabs = st.tabs(
         [
-            "Per-Group Performance Breakdown (Test Set)",
-            "Before vs. After Mitigation Comparison Table",
-            "Audit Methodology & Governance Rules",
+            "📋 Per-Group Performance",
+            "🔄 Before vs After Mitigation",
+            "📖 Audit Methodology",
         ]
     )
 
     with fairness_tabs[0]:
-        st.subheader("Per-Group Performance Audit across Demographics")
-        st.caption(
-            "Includes sample size N, TPR/FPR with 95% bootstrap confidence intervals, precision, selection rate, and predicted vs. observed risk."
+        st.markdown(
+            section_header(
+                "📋",
+                "Per-Group Performance Audit",
+                "N, TPR/FPR with 95% bootstrap CIs, precision, selection rate, "
+                "and predicted vs observed risk.",
+            ),
+            unsafe_allow_html=True,
         )
 
-        sub_col1, sub_col2 = st.columns([2, 2])
-        with sub_col1:
+        fc1, fc2 = st.columns([2, 2])
+        with fc1:
             attr_choice = st.radio(
-                "Select Demographic Attribute to Audit:",
+                "Demographic Attribute:",
                 ["Race / Ethnicity", "Gender", "Age Band"],
                 horizontal=True,
             )
-        with sub_col2:
+        with fc2:
             mitigation_view = st.radio(
                 "Mitigation State:",
-                ["Post-Mitigation (Equalized Odds)", "Pre-Mitigation (Unmitigated Baseline)"],
+                ["Post-Mitigation (Equalized Odds)", "Pre-Mitigation (Baseline)"],
                 horizontal=True,
             )
 
@@ -484,7 +697,6 @@ elif page == "Fairness by Group":
         attr_key = attr_key_map[attr_choice]
         state_key = "after" if "Post-Mitigation" in mitigation_view else "before"
 
-        # Load per-group table from fairness_details or metrics_data
         attr_data = fairness_details.get("attributes", {}).get(attr_key, {}).get(state_key, {})
         if not attr_data:
             attr_data = (
@@ -501,30 +713,41 @@ elif page == "Fairness by Group":
                 rows.append(
                     {
                         "Subgroup": grp,
-                        "Sample Size (N)": f"{int(vals.get('n', 0)):,}",
+                        "N": f"{int(vals.get('n', 0)):,}",
                         "Observed Risk": f"{vals.get('observed_risk', 0.0899) * 100:.2f}%",
                         "Predicted Risk": f"{vals.get('predicted_risk', 0.0899) * 100:.2f}%",
-                        "TPR (Recall) [95% CI]": f"{vals.get('tpr', 0.0) * 100:.2f}% [{tpr_ci[0] * 100:.1f}%, {tpr_ci[1] * 100:.1f}%]",
-                        "FPR (False Alarm) [95% CI]": f"{vals.get('fpr', 0.0) * 100:.2f}% [{fpr_ci[0] * 100:.1f}%, {fpr_ci[1] * 100:.1f}%]",
+                        "TPR [95% CI]": (
+                            f"{vals.get('tpr', 0.0) * 100:.2f}% "
+                            f"[{tpr_ci[0] * 100:.1f}%, {tpr_ci[1] * 100:.1f}%]"
+                        ),
+                        "FPR [95% CI]": (
+                            f"{vals.get('fpr', 0.0) * 100:.2f}% "
+                            f"[{fpr_ci[0] * 100:.1f}%, {fpr_ci[1] * 100:.1f}%]"
+                        ),
                         "Precision": f"{vals.get('precision', 0.0) * 100:.2f}%",
                         "Selection Rate": f"{vals.get('selection_rate', 0.0) * 100:.2f}%",
-                        "Reliability (Brier)": f"{vals.get('brier_score', 0.08):.4f}",
-                        "Sample Size Alert": "⚠️ Low N (<500)"
-                        if vals.get("low_confidence", False)
-                        else "Adequate N",
+                        "Brier": f"{vals.get('brier_score', 0.08):.4f}",
+                        "Flag": "⚠️ Low N" if vals.get("low_confidence", False) else "✅",
                     }
                 )
-            df_display = pd.DataFrame(rows)
-            st.dataframe(df_display, use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
         else:
-            st.warning(
-                "Per-group fairness metrics not found. Run `python scripts/update_fairness_report.py` to regenerate."
+            st.markdown(
+                info_banner(
+                    "Per-group fairness metrics not found. Run "
+                    "<code>python scripts/update_fairness_report.py</code>."
+                ),
+                unsafe_allow_html=True,
             )
 
     with fairness_tabs[1]:
-        st.subheader("Before vs. After Mitigation Comparison Table")
-        st.caption(
-            "Directly tracks Recall, Precision, Flagged Rate, FPR, and Group Calibration before and after Equalized Odds optimization."
+        st.markdown(
+            section_header(
+                "🔄",
+                "Before vs After Mitigation",
+                "Recall, precision, flagged rate, FPR, and calibration ratio by group.",
+            ),
+            unsafe_allow_html=True,
         )
 
         by_attr = fairness_details.get("before_after_summary", {}).get("by_attribute", {})
@@ -537,93 +760,121 @@ elif page == "Fairness by Group":
                             "Attribute": attr_name.replace("_", " ").title(),
                             "Subgroup": r["group"],
                             "N": f"{r['n']:,}",
-                            "Recall (Before)": f"{r['recall_before'] * 100:.2f}%",
-                            "Recall (After)": f"{r['recall_after'] * 100:.2f}%",
-                            "Recall Δ": f"{r['recall_delta'] * 100:+.2f}%",
-                            "Precision (Before)": f"{r['precision_before'] * 100:.2f}%",
-                            "Precision (After)": f"{r['precision_after'] * 100:.2f}%",
-                            "Flagged Rate (Before)": f"{r['flagged_rate_before'] * 100:.2f}%",
-                            "Flagged Rate (After)": f"{r['flagged_rate_after'] * 100:.2f}%",
-                            "FPR (Before)": f"{r['fpr_before'] * 100:.2f}%",
-                            "FPR (After)": f"{r['fpr_after'] * 100:.2f}%",
-                            "Calibration Ratio (Pred/Obs)": f"{r['calibration_ratio']:.2f}x",
-                            "Note": "⚠️ Low N" if r["low_confidence"] else "Adequate",
+                            "Recall ⬅": f"{r['recall_before'] * 100:.2f}%",
+                            "Recall ➡": f"{r['recall_after'] * 100:.2f}%",
+                            "Δ Recall": f"{r['recall_delta'] * 100:+.2f}%",
+                            "Precision ⬅": f"{r['precision_before'] * 100:.2f}%",
+                            "Precision ➡": f"{r['precision_after'] * 100:.2f}%",
+                            "Flagged ⬅": f"{r['flagged_rate_before'] * 100:.2f}%",
+                            "Flagged ➡": f"{r['flagged_rate_after'] * 100:.2f}%",
+                            "FPR ⬅": f"{r['fpr_before'] * 100:.2f}%",
+                            "FPR ➡": f"{r['fpr_after'] * 100:.2f}%",
+                            "Cal Ratio": f"{r['calibration_ratio']:.2f}x",
+                            "Flag": "⚠️" if r["low_confidence"] else "✅",
                         }
                     )
-            df_comp = pd.DataFrame(comp_rows)
-            st.dataframe(df_comp, use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(comp_rows), use_container_width=True, hide_index=True)
         else:
-            st.info(
-                "Run `python scripts/update_fairness_report.py` to populate comparative tables."
+            st.markdown(
+                info_banner(
+                    "Run <code>python scripts/update_fairness_report.py</code> "
+                    "to populate comparison tables."
+                ),
+                unsafe_allow_html=True,
             )
 
-        st.markdown("#### Disparity Gaps Summary Across Protected Attributes")
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(
+            section_header("📊", "Disparity Gaps Summary"),
+            unsafe_allow_html=True,
+        )
         gaps_b = metrics_data.get("fairness_gaps", {}).get("before", {})
         gaps_a = metrics_data.get("fairness_gaps", {}).get("after", {})
         gaps_table = [
             {
-                "Attribute": "Race / Ethnicity (Primary Target)",
-                "TPR Gap (Before)": f"{gaps_b.get('race_group', {}).get('tpr_gap', 0.0610) * 100:.2f}%",
-                "TPR Gap (After)": f"{gaps_a.get('race_group', {}).get('tpr_gap', 0.0385) * 100:.2f}%",
-                "TPR Gap Δ": f"{(gaps_a.get('race_group', {}).get('tpr_gap', 0.0385) - gaps_b.get('race_group', {}).get('tpr_gap', 0.0610)) * 100:+.2f}%",
-                "FPR Gap (Before)": f"{gaps_b.get('race_group', {}).get('fpr_gap', 0.0507) * 100:.2f}%",
-                "FPR Gap (After)": f"{gaps_a.get('race_group', {}).get('fpr_gap', 0.0017) * 100:.2f}%",
-                "FPR Gap Δ": f"{(gaps_a.get('race_group', {}).get('fpr_gap', 0.0017) - gaps_b.get('race_group', {}).get('fpr_gap', 0.0507)) * 100:+.2f}%",
+                "Attribute": "Race / Ethnicity",
+                "TPR Gap ⬅": f"{gaps_b.get('race_group', {}).get('tpr_gap', 0.0610) * 100:.2f}%",
+                "TPR Gap ➡": f"{gaps_a.get('race_group', {}).get('tpr_gap', 0.0385) * 100:.2f}%",
+                "Δ TPR": f"{(gaps_a.get('race_group', {}).get('tpr_gap', 0.0385) - gaps_b.get('race_group', {}).get('tpr_gap', 0.0610)) * 100:+.2f}%",
+                "FPR Gap ⬅": f"{gaps_b.get('race_group', {}).get('fpr_gap', 0.0507) * 100:.2f}%",
+                "FPR Gap ➡": f"{gaps_a.get('race_group', {}).get('fpr_gap', 0.0017) * 100:.2f}%",
+                "Δ FPR": f"{(gaps_a.get('race_group', {}).get('fpr_gap', 0.0017) - gaps_b.get('race_group', {}).get('fpr_gap', 0.0507)) * 100:+.2f}%",
             },
             {
                 "Attribute": "Gender",
-                "TPR Gap (Before)": f"{gaps_b.get('gender', {}).get('tpr_gap', 0.0832) * 100:.2f}%",
-                "TPR Gap (After)": f"{gaps_a.get('gender', {}).get('tpr_gap', 0.0918) * 100:.2f}%",
-                "TPR Gap Δ": f"{(gaps_a.get('gender', {}).get('tpr_gap', 0.0918) - gaps_b.get('gender', {}).get('tpr_gap', 0.0832)) * 100:+.2f}%",
-                "FPR Gap (Before)": f"{gaps_b.get('gender', {}).get('fpr_gap', 0.0478) * 100:.2f}%",
-                "FPR Gap (After)": f"{gaps_a.get('gender', {}).get('fpr_gap', 0.0480) * 100:.2f}%",
-                "FPR Gap Δ": f"{(gaps_a.get('gender', {}).get('fpr_gap', 0.0480) - gaps_b.get('gender', {}).get('fpr_gap', 0.0478)) * 100:+.2f}%",
+                "TPR Gap ⬅": f"{gaps_b.get('gender', {}).get('tpr_gap', 0.0832) * 100:.2f}%",
+                "TPR Gap ➡": f"{gaps_a.get('gender', {}).get('tpr_gap', 0.0918) * 100:.2f}%",
+                "Δ TPR": f"{(gaps_a.get('gender', {}).get('tpr_gap', 0.0918) - gaps_b.get('gender', {}).get('tpr_gap', 0.0832)) * 100:+.2f}%",
+                "FPR Gap ⬅": f"{gaps_b.get('gender', {}).get('fpr_gap', 0.0478) * 100:.2f}%",
+                "FPR Gap ➡": f"{gaps_a.get('gender', {}).get('fpr_gap', 0.0480) * 100:.2f}%",
+                "Δ FPR": f"{(gaps_a.get('gender', {}).get('fpr_gap', 0.0480) - gaps_b.get('gender', {}).get('fpr_gap', 0.0478)) * 100:+.2f}%",
             },
             {
                 "Attribute": "Age Band",
-                "TPR Gap (Before)": f"{gaps_b.get('age_band', {}).get('tpr_gap', 0.2947) * 100:.2f}%",
-                "TPR Gap (After)": f"{gaps_a.get('age_band', {}).get('tpr_gap', 0.3014) * 100:.2f}%",
-                "TPR Gap Δ": f"{(gaps_a.get('age_band', {}).get('tpr_gap', 0.3014) - gaps_b.get('age_band', {}).get('tpr_gap', 0.2947)) * 100:+.2f}%",
-                "FPR Gap (Before)": f"{gaps_b.get('age_band', {}).get('fpr_gap', 0.2558) * 100:.2f}%",
-                "FPR Gap (After)": f"{gaps_a.get('age_band', {}).get('fpr_gap', 0.2270) * 100:.2f}%",
-                "FPR Gap Δ": f"{(gaps_a.get('age_band', {}).get('fpr_gap', 0.2270) - gaps_b.get('age_band', {}).get('fpr_gap', 0.2558)) * 100:+.2f}%",
+                "TPR Gap ⬅": f"{gaps_b.get('age_band', {}).get('tpr_gap', 0.2947) * 100:.2f}%",
+                "TPR Gap ➡": f"{gaps_a.get('age_band', {}).get('tpr_gap', 0.3014) * 100:.2f}%",
+                "Δ TPR": f"{(gaps_a.get('age_band', {}).get('tpr_gap', 0.3014) - gaps_b.get('age_band', {}).get('tpr_gap', 0.2947)) * 100:+.2f}%",
+                "FPR Gap ⬅": f"{gaps_b.get('age_band', {}).get('fpr_gap', 0.2558) * 100:.2f}%",
+                "FPR Gap ➡": f"{gaps_a.get('age_band', {}).get('fpr_gap', 0.2270) * 100:.2f}%",
+                "Δ FPR": f"{(gaps_a.get('age_band', {}).get('fpr_gap', 0.2270) - gaps_b.get('age_band', {}).get('fpr_gap', 0.2558)) * 100:+.2f}%",
             },
         ]
         st.dataframe(pd.DataFrame(gaps_table), use_container_width=True, hide_index=True)
 
     with fairness_tabs[2]:
         st.markdown(
-            "### Clinical AI Governance & Mitigation Methodology\n"
-            "- **Fairness Invariant:** Race and gender are strictly excluded from predictive model features. "
-            "They are tracked exclusively as audit attributes to prevent algorithmic bias from becoming entrenched.\n"
-            "- **Mitigation Technique:** Fairlearn `ThresholdOptimizer(estimator=calibrated_model, constraints='equalized_odds', objective='balanced_accuracy_score', prefit=True)`.\n"
-            "- **Audit Sample Size Policy:** Any subgroup with $N < 500$ (e.g. Asian, Other, Hispanic in this cohort) "
-            "is flagged as low-confidence due to statistical variance in bootstrap percentiles."
+            section_header("📖", "Audit Methodology & Governance"),
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            glass_card(
+                "<h4 style='color:#00D4AA; margin-top:0;'>Clinical AI Governance Rules</h4>"
+                "<ul style='color:#8892B0; line-height:1.8;'>"
+                "<li><strong>Fairness Invariant:</strong> Race and gender strictly excluded from "
+                "predictive features, tracked only for demographic parity audit.</li>"
+                "<li><strong>Mitigation:</strong> Fairlearn <code>ThresholdOptimizer"
+                "(constraints='equalized_odds', objective='balanced_accuracy_score', "
+                "prefit=True)</code></li>"
+                "<li><strong>Low-N Policy:</strong> Subgroups with N < 500 flagged as "
+                "low-confidence due to bootstrap variance.</li>"
+                "<li><strong>Non-Causal:</strong> The model supports risk prioritization; "
+                "it does not recommend clinical treatment.</li>"
+                "</ul>"
+            ),
+            unsafe_allow_html=True,
         )
 
-# =========================================================
-# Page 5: Model Comparison & Capacity
-# =========================================================
+
+# ═════════════════════════════════════════════════════════
+# PAGE 5 — Model Comparison & Capacity
+# ═════════════════════════════════════════════════════════
 elif page == "Model Comparison & Capacity":
-    st.title("📊 Model Comparison & Operational Capacity")
     st.markdown(
-        "Comprehensive evaluation of model discrimination (PR-AUC, ROC-AUC), "
-        "calibration reliability (Brier Score, ECE), and capacity-constrained decision support."
+        hero_section(
+            "Model Comparison & Operational Capacity",
+            "Discrimination (PR-AUC, ROC-AUC), calibration reliability (Brier, ECE), "
+            "and capacity-constrained decision support evaluation.",
+        ),
+        unsafe_allow_html=True,
     )
 
     comp_tabs = st.tabs(
         [
-            "Model Comparison Leaderboard",
-            "Operational Capacity Allocation (K=5%, 10%, 20%)",
-            "Probability Reliability Curves",
-            "Imbalance Mitigation Ablation",
+            "🏆 Leaderboard",
+            "📋 Capacity Tiers",
+            "📈 Calibration Curves",
+            "🔬 Imbalance Ablation",
         ]
     )
 
     with comp_tabs[0]:
-        st.subheader("Model Comparison Leaderboard (Touch-Once Test Set)")
-        st.caption(
-            "All models evaluated on the frozen 10,500 patient test set with 95% bootstrap confidence intervals (1,000 resamples)."
+        st.markdown(
+            section_header(
+                "🏆",
+                "Model Leaderboard (Test Set)",
+                "Frozen 10,500 patient test set · 95% bootstrap CIs (1,000 resamples)",
+            ),
+            unsafe_allow_html=True,
         )
 
         models_dict = metrics_data.get("models", {})
@@ -631,200 +882,223 @@ elif page == "Model Comparison & Capacity":
         lr_cal = models_dict.get("logistic_regression_calibrated", {})
         xgb_raw = models_dict.get("xgboost_raw", {})
 
-        leaderboard_data = [
+        def _fmt_ci(
+            metric_dict: dict, key: str, default_val: float = 0.0, default_ci: list | None = None
+        ) -> str:
+            if default_ci is None:
+                default_ci = [default_val, default_val]
+            val = metric_dict.get(key, {}).get("value", default_val)
+            ci = metric_dict.get(key, {}).get("ci95", default_ci)
+            return f"{val:.4f} [{ci[0]:.4f}, {ci[1]:.4f}]"
+
+        def _fmt_cap(
+            metric_dict: dict, idx: int, key: str, fmt: str = "pct", default: float = 0.0
+        ) -> str:
+            cap = metric_dict.get("capacity", [])
+            if len(cap) > idx:
+                v = cap[idx].get(key, default)
+            else:
+                v = default
+            if fmt == "pct":
+                return f"{v * 100:.2f}%"
+            return f"{v:.2f}x"
+
+        leaderboard = [
             {
-                "Model Architecture": "XGBoost (Calibrated Isotonic)",
-                "Role / Designation": "⭐ PRIMARY MODEL",
-                "Split": "Test",
-                "PR-AUC (95% CI)": f"{xgb_cal.get('pr_auc', {}).get('value', 0.1385):.4f} [{xgb_cal.get('pr_auc', {}).get('ci95', [0.1268, 0.1529])[0]:.4f}, {xgb_cal.get('pr_auc', {}).get('ci95', [0.1268, 0.1529])[1]:.4f}]",
-                "ROC-AUC (95% CI)": f"{xgb_cal.get('roc_auc', {}).get('value', 0.6344):.4f} [{xgb_cal.get('roc_auc', {}).get('ci95', [0.6168, 0.6532])[0]:.4f}, {xgb_cal.get('roc_auc', {}).get('ci95', [0.6168, 0.6532])[1]:.4f}]",
-                "Brier Score (95% CI)": f"{xgb_cal.get('brier', {}).get('value', 0.0806):.4f} [{xgb_cal.get('brier', {}).get('ci95', [0.0762, 0.0848])[0]:.4f}, {xgb_cal.get('brier', {}).get('ci95', [0.0762, 0.0848])[1]:.4f}]",
-                "ECE (10-bin)": f"{xgb_cal.get('ece', 0.0062):.4f}",
-                "Recall @ K=20%": f"{xgb_cal.get('capacity', [{}, {}, {}])[2].get('recall', 0.3453) * 100:.2f}%",
-                "Precision @ K=20%": f"{xgb_cal.get('capacity', [{}, {}, {}])[2].get('precision', 0.1552) * 100:.2f}%",
-                "Lift @ K=20%": f"{xgb_cal.get('capacity', [{}, {}, {}])[2].get('lift', 1.73):.2f}x",
+                "Model": "⭐ XGBoost (Calibrated Isotonic)",
+                "PR-AUC [95% CI]": _fmt_ci(xgb_cal, "pr_auc", 0.1385, [0.1268, 0.1529]),
+                "ROC-AUC [95% CI]": _fmt_ci(xgb_cal, "roc_auc", 0.6344, [0.6168, 0.6532]),
+                "Brier [95% CI]": _fmt_ci(xgb_cal, "brier", 0.0806, [0.0762, 0.0848]),
+                "ECE": f"{xgb_cal.get('ece', 0.0062):.4f}",
+                "Recall@20%": _fmt_cap(xgb_cal, 2, "recall"),
+                "Lift@20%": _fmt_cap(xgb_cal, 2, "lift", "x"),
             },
             {
-                "Model Architecture": "Logistic Regression (Calibrated Platt)",
-                "Role / Designation": "Comparative Benchmark",
-                "Split": "Test",
-                "PR-AUC (95% CI)": f"{lr_cal.get('pr_auc', {}).get('value', 0.1351):.4f} [{lr_cal.get('pr_auc', {}).get('ci95', [0.1232, 0.1504])[0]:.4f}, {lr_cal.get('pr_auc', {}).get('ci95', [0.1232, 0.1504])[1]:.4f}]",
-                "ROC-AUC (95% CI)": f"{lr_cal.get('roc_auc', {}).get('value', 0.6208):.4f} [{lr_cal.get('roc_auc', {}).get('ci95', [0.6025, 0.6388])[0]:.4f}, {lr_cal.get('roc_auc', {}).get('ci95', [0.6025, 0.6388])[1]:.4f}]",
-                "Brier Score (95% CI)": f"{lr_cal.get('brier', {}).get('value', 0.0808):.4f} [{lr_cal.get('brier', {}).get('ci95', [0.0765, 0.0850])[0]:.4f}, {lr_cal.get('brier', {}).get('ci95', [0.0765, 0.0850])[1]:.4f}]",
-                "ECE (10-bin)": f"{lr_cal.get('ece', 0.0086):.4f}",
-                "Recall @ K=20%": f"{lr_cal.get('capacity', [{}, {}, {}])[2].get('recall', 0.3326) * 100:.2f}%",
-                "Precision @ K=20%": f"{lr_cal.get('capacity', [{}, {}, {}])[2].get('precision', 0.1495) * 100:.2f}%",
-                "Lift @ K=20%": f"{lr_cal.get('capacity', [{}, {}, {}])[2].get('lift', 1.66):.2f}x",
+                "Model": "LR (Calibrated Platt)",
+                "PR-AUC [95% CI]": _fmt_ci(lr_cal, "pr_auc", 0.1351, [0.1232, 0.1504]),
+                "ROC-AUC [95% CI]": _fmt_ci(lr_cal, "roc_auc", 0.6208, [0.6025, 0.6388]),
+                "Brier [95% CI]": _fmt_ci(lr_cal, "brier", 0.0808, [0.0765, 0.0850]),
+                "ECE": f"{lr_cal.get('ece', 0.0086):.4f}",
+                "Recall@20%": _fmt_cap(lr_cal, 2, "recall"),
+                "Lift@20%": _fmt_cap(lr_cal, 2, "lift", "x"),
             },
             {
-                "Model Architecture": "XGBoost (Raw / Uncalibrated)",
-                "Role / Designation": "Comparative Benchmark",
-                "Split": "Test",
-                "PR-AUC (95% CI)": f"{xgb_raw.get('pr_auc', {}).get('value', 0.1456):.4f} [{xgb_raw.get('pr_auc', {}).get('ci95', [0.1330, 0.1623])[0]:.4f}, {xgb_raw.get('pr_auc', {}).get('ci95', [0.1330, 0.1623])[1]:.4f}]",
-                "ROC-AUC (95% CI)": f"{xgb_raw.get('roc_auc', {}).get('value', 0.6378):.4f} [{xgb_raw.get('roc_auc', {}).get('ci95', [0.6198, 0.6562])[0]:.4f}, {xgb_raw.get('roc_auc', {}).get('ci95', [0.6198, 0.6562])[1]:.4f}]",
-                "Brier Score (95% CI)": f"{xgb_raw.get('brier', {}).get('value', 0.0802):.4f} [{xgb_raw.get('brier', {}).get('ci95', [0.0759, 0.0844])[0]:.4f}, {xgb_raw.get('brier', {}).get('ci95', [0.0759, 0.0844])[1]:.4f}]",
-                "ECE (10-bin)": f"{xgb_raw.get('ece', 0.0029):.4f}",
-                "Recall @ K=20%": f"{xgb_cal.get('capacity', [{}, {}, {}])[2].get('recall', 0.3453) * 100:.2f}%",
-                "Precision @ K=20%": f"{xgb_cal.get('capacity', [{}, {}, {}])[2].get('precision', 0.1552) * 100:.2f}%",
-                "Lift @ K=20%": f"{xgb_cal.get('capacity', [{}, {}, {}])[2].get('lift', 1.73):.2f}x",
+                "Model": "XGBoost (Raw / Uncalibrated)",
+                "PR-AUC [95% CI]": _fmt_ci(xgb_raw, "pr_auc", 0.1456, [0.1330, 0.1623]),
+                "ROC-AUC [95% CI]": _fmt_ci(xgb_raw, "roc_auc", 0.6378, [0.6198, 0.6562]),
+                "Brier [95% CI]": _fmt_ci(xgb_raw, "brier", 0.0802, [0.0759, 0.0844]),
+                "ECE": f"{xgb_raw.get('ece', 0.0029):.4f}",
+                "Recall@20%": _fmt_cap(xgb_raw, 2, "recall"),
+                "Lift@20%": _fmt_cap(xgb_raw, 2, "lift", "x"),
             },
             {
-                "Model Architecture": "Prior Inpatient Clinical Heuristic",
-                "Role / Designation": "Clinical Baseline",
-                "Split": "Test",
-                "PR-AUC (95% CI)": "0.1201 [0.1082, 0.1325]",
-                "ROC-AUC (95% CI)": "0.5891 [0.5714, 0.6068]",
-                "Brier Score (95% CI)": "N/A (Ordinal Heuristic)",
-                "ECE (10-bin)": "N/A",
-                "Recall @ K=20%": "24.12%",
-                "Precision @ K=20%": "10.84%",
-                "Lift @ K=20%": "1.20x",
+                "Model": "Prior Inpatient Heuristic",
+                "PR-AUC [95% CI]": "0.1201 [0.1082, 0.1325]",
+                "ROC-AUC [95% CI]": "0.5891 [0.5714, 0.6068]",
+                "Brier [95% CI]": "N/A (Ordinal)",
+                "ECE": "N/A",
+                "Recall@20%": "24.12%",
+                "Lift@20%": "1.20x",
             },
             {
-                "Model Architecture": "Prevalence Baseline (Uninformative)",
-                "Role / Designation": "Theoretical Floor",
-                "Split": "Test",
-                "PR-AUC (95% CI)": "0.0899 [0.0899, 0.0899]",
-                "ROC-AUC (95% CI)": "0.5000 [0.5000, 0.5000]",
-                "Brier Score (95% CI)": "0.0818 [0.0775, 0.0861]",
-                "ECE (10-bin)": "0.0000",
-                "Recall @ K=20%": "20.00%",
-                "Precision @ K=20%": "8.99%",
-                "Lift @ K=20%": "1.00x",
+                "Model": "Prevalence Floor",
+                "PR-AUC [95% CI]": "0.0899 [—, —]",
+                "ROC-AUC [95% CI]": "0.5000 [—, —]",
+                "Brier [95% CI]": "0.0818 [0.0775, 0.0861]",
+                "ECE": "0.0000",
+                "Recall@20%": "20.00%",
+                "Lift@20%": "1.00x",
             },
         ]
-        df_leaderboard = pd.DataFrame(leaderboard_data)
-        st.dataframe(df_leaderboard, use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(leaderboard), use_container_width=True, hide_index=True)
 
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            "#### ⭐ Primary Model Selection Rationale\n"
-            "- **Discrimination:** Calibrated XGBoost delivers **0.1385 PR-AUC** (+54.1% relative improvement over prevalence floor) "
-            "and **0.6344 ROC-AUC**, outperforming the clinical heuristic baseline by a wide margin.\n"
-            "- **Calibration & Reliability:** Post-hoc isotonic calibration drives Expected Calibration Error down to **0.0062** "
-            "with a Brier score of **0.0806**, ensuring predicted risk values directly mirror observed clinical incidence.\n"
-            "- **Capacity Efficiency:** When targeting the top 20% of discharged patients, Calibrated XGBoost captures **34.53% of all readmissions** "
-            "(1.73x lift over hospital baseline)."
+            glass_card(
+                "<h4 style='color:#00D4AA; margin-top:0;'>⭐ Primary Model Selection</h4>"
+                "<ul style='color:#8892B0; line-height:1.8;'>"
+                "<li><strong>Discrimination:</strong> 0.1385 PR-AUC (+54% over prevalence), "
+                "0.6344 ROC-AUC</li>"
+                "<li><strong>Calibration:</strong> ECE 0.0062 · Brier 0.0806 — predicted risks "
+                "match observed incidence</li>"
+                "<li><strong>Capacity:</strong> Top 20% captures 34.53% of readmissions "
+                "(1.73× lift)</li>"
+                "</ul>"
+            ),
+            unsafe_allow_html=True,
         )
 
     with comp_tabs[1]:
-        st.subheader("Capacity-Constrained Decision Tiers (Test Set)")
-        st.caption("Decision support operating characteristics under fixed nurse outreach quotas:")
+        st.markdown(
+            section_header(
+                "📋",
+                "Capacity-Constrained Decision Tiers",
+                "Operating characteristics under fixed nurse outreach quotas:",
+            ),
+            unsafe_allow_html=True,
+        )
 
         cap_list = metrics_data.get("models", {}).get("xgboost_calibrated", {}).get("capacity", [])
         if cap_list:
-            df_cap = pd.DataFrame(cap_list)
-            df_cap["Capacity Tier"] = df_cap["k_percent"].map(
-                lambda x: f"Top {x}% ({int(x * 105):,} Patients)"
+            cap_df = pd.DataFrame(cap_list)
+            cap_df["Tier"] = cap_df["k_percent"].map(
+                lambda x: f"Top {x}% ({int(x * 105):,} patients)"
             )
-            df_cap["Probability Cutoff"] = (df_cap["threshold"] * 100).round(2).astype(str) + "%"
-            df_cap["Captured Readmissions"] = df_cap["positives_captured"].map(
-                lambda x: f"{x:,} of 944"
-            )
-            df_cap["Recall (Sensitivity)"] = (df_cap["recall"] * 100).round(2).astype(str) + "%"
-            df_cap["Precision (PPV)"] = (df_cap["precision"] * 100).round(2).astype(str) + "%"
-            df_cap["Lift over Baseline"] = df_cap["lift"].round(2).astype(str) + "x"
-
+            cap_df["Cutoff"] = (cap_df["threshold"] * 100).round(2).astype(str) + "%"
+            cap_df["Captured"] = cap_df["positives_captured"].map(lambda x: f"{x:,} / 944")
+            cap_df["Recall"] = (cap_df["recall"] * 100).round(2).astype(str) + "%"
+            cap_df["Precision"] = (cap_df["precision"] * 100).round(2).astype(str) + "%"
+            cap_df["Lift"] = cap_df["lift"].round(2).astype(str) + "×"
             st.dataframe(
-                df_cap[
-                    [
-                        "Capacity Tier",
-                        "Probability Cutoff",
-                        "Captured Readmissions",
-                        "Recall (Sensitivity)",
-                        "Precision (PPV)",
-                        "Lift over Baseline",
-                    ]
-                ],
+                cap_df[["Tier", "Cutoff", "Captured", "Recall", "Precision", "Lift"]],
                 use_container_width=True,
                 hide_index=True,
             )
 
     with comp_tabs[2]:
-        st.subheader("Validation Probability Reliability Curve")
-        st.caption(
-            "Reliability curves demonstrating raw vs Platt vs Isotonic calibration against empirical risk bins:"
+        st.markdown(
+            section_header(
+                "📈",
+                "Probability Reliability Curves",
+                "Raw vs Platt vs Isotonic calibration against empirical risk bins:",
+            ),
+            unsafe_allow_html=True,
         )
-        cal_curve_img = pathlib.Path("reports/figures/calibration_curve_xgb.png")
-        if cal_curve_img.exists():
+        cal_img = pathlib.Path("reports/figures/calibration_curve_xgb.png")
+        if cal_img.exists():
             st.image(
-                str(cal_curve_img),
-                caption="Reliability Curves: Raw vs Platt vs Isotonic Calibration",
+                str(cal_img),
+                caption="Reliability Curves: Raw vs Platt vs Isotonic",
                 use_container_width=True,
             )
         else:
-            st.info("Run `python -m readmit.cli evaluate` to generate calibration plots.")
+            st.markdown(
+                info_banner(
+                    "Run <code>python -m readmit.cli evaluate</code> to generate calibration plots."
+                ),
+                unsafe_allow_html=True,
+            )
 
     with comp_tabs[3]:
-        st.subheader("Class Imbalance Strategy Ablation (Validation Cohort)")
-        st.caption(
-            "Comparing model performance under natural prevalence, balanced class weighting, and SMOTE oversampling:"
+        st.markdown(
+            section_header(
+                "🔬",
+                "Imbalance Strategy Ablation (Validation)",
+                "Natural prevalence vs balanced weighting vs SMOTE oversampling:",
+            ),
+            unsafe_allow_html=True,
         )
         ablation_rows = [
             {
-                "Model": "Logistic Regression",
-                "Imbalance Strategy": "None (unweighted)",
+                "Model": "LR",
+                "Strategy": "None (unweighted)",
                 "PR-AUC": "0.1647",
                 "ROC-AUC": "0.6454",
-                "Brier Score": "0.0794",
+                "Brier": "0.0794",
                 "ECE": "0.0014",
-                "Recall @ K=20%": "36.94%",
-                "Lift": "1.85x",
+                "Recall@20%": "36.94%",
+                "Lift": "1.85×",
             },
             {
                 "Model": "XGBoost",
-                "Imbalance Strategy": "None (unweighted)",
+                "Strategy": "None (unweighted)",
                 "PR-AUC": "0.1716",
                 "ROC-AUC": "0.6489",
-                "Brier Score": "0.0792",
+                "Brier": "0.0792",
                 "ECE": "0.0014",
-                "Recall @ K=20%": "37.69%",
-                "Lift": "1.88x",
+                "Recall@20%": "37.69%",
+                "Lift": "1.88×",
             },
             {
-                "Model": "Logistic Regression",
-                "Imbalance Strategy": "Class Weight (balanced)",
+                "Model": "LR",
+                "Strategy": "Class Weight (balanced)",
                 "PR-AUC": "0.1634",
                 "ROC-AUC": "0.6459",
-                "Brier Score": "0.2309",
+                "Brier": "0.2309",
                 "ECE": "0.3800",
-                "Recall @ K=20%": "36.52%",
-                "Lift": "1.83x",
+                "Recall@20%": "36.52%",
+                "Lift": "1.83×",
             },
             {
                 "Model": "XGBoost",
-                "Imbalance Strategy": "scale_pos_weight (10.14)",
+                "Strategy": "scale_pos_weight (10.14)",
                 "PR-AUC": "0.1645",
                 "ROC-AUC": "0.6385",
-                "Brier Score": "0.2141",
+                "Brier": "0.2141",
                 "ECE": "0.3532",
-                "Recall @ K=20%": "35.56%",
-                "Lift": "1.78x",
+                "Recall@20%": "35.56%",
+                "Lift": "1.78×",
             },
             {
-                "Model": "Logistic Regression",
-                "Imbalance Strategy": "SMOTE Oversampling",
+                "Model": "LR",
+                "Strategy": "SMOTE",
                 "PR-AUC": "0.1576",
                 "ROC-AUC": "0.6345",
-                "Brier Score": "0.2315",
+                "Brier": "0.2315",
                 "ECE": "0.3756",
-                "Recall @ K=20%": "35.77%",
-                "Lift": "1.79x",
+                "Recall@20%": "35.77%",
+                "Lift": "1.79×",
             },
             {
                 "Model": "XGBoost",
-                "Imbalance Strategy": "SMOTE Oversampling",
+                "Strategy": "SMOTE",
                 "PR-AUC": "0.1599",
                 "ROC-AUC": "0.6365",
-                "Brier Score": "0.0807",
+                "Brier": "0.0807",
                 "ECE": "0.0295",
-                "Recall @ K=20%": "35.77%",
-                "Lift": "1.79x",
+                "Recall@20%": "35.77%",
+                "Lift": "1.79×",
             },
         ]
         st.dataframe(pd.DataFrame(ablation_rows), use_container_width=True, hide_index=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            "> [!NOTE]\n"
-            "> **Key Ablation Finding:** Class reweighting and SMOTE severely distort the predicted risk distribution, "
-            "inflating ECE to > 0.35 unless recalibrated. Natural prevalence training paired with post-hoc isotonic calibration "
-            "delivers optimal discrimination and clinical calibration."
+            info_banner(
+                "<strong>Key Finding:</strong> Class reweighting and SMOTE severely distort "
+                "the predicted risk distribution (ECE > 0.35 without recalibration). "
+                "Natural prevalence training + isotonic post-hoc calibration delivers "
+                "optimal discrimination and clinical reliability."
+            ),
+            unsafe_allow_html=True,
         )
