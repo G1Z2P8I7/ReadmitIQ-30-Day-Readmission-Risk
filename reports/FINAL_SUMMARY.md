@@ -53,6 +53,7 @@
 3. **Imbalance Ablation Dependency:** Installed `imbalanced-learn` strictly within the project virtual environment to enable SMOTE oversampling in the M4 ablation study.
 4. **MLflow Tracking Backend:** Configured `sqlite:///mlflow.db` to replace deprecated filesystem tracking and avoid MLflow filestore warnings.
 5. **Calibrator Selection:** Selected Isotonic regression over Platt scaling based on validation Brier score (**0.0788** vs 0.0792) and near-zero ECE.
+6. **Clinical UI Design System:** Overhauled the Streamlit clinical decision support interface to match the warm luxury editorial design of Function Health (`#FAF8F5` alabaster, `#F3EFE6` sand cards, `#A84B29` terracotta accent, Google Fonts `Newsreader` serif italics, and 01/02/03 step cards) to maximize usability for clinical outreach teams.
 
 ---
 

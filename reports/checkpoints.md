@@ -273,6 +273,30 @@ uff check src tests: Passed (0 errors).
   - Project milestone delivery (M0 to M10) across Priority Tiers P0 to P3 is 100% complete and fully verified.
 - **Open issues:** None. All requirements fulfilled.
 
+---
+
+## Checkpoint 10: Streamlit Dashboard Function Health Editorial Design Overhaul & UI Hardening
+- **What was built:**
+  - Complete front-end visual overhaul aligning the Streamlit clinical decision support application with the warm luxury editorial design of [Function Health](https://www.functionhealth.com/) (reference screenshots in `Website Pics`):
+    - `.streamlit/config.toml`: Updated theme palette to warm alabaster (`#FAF8F5`), soft sand (`#F3EFE6`), terracotta brand accent (`#A84B29`), and deep espresso charcoal text (`#1A1715`).
+    - `app/style.py`: Complete styling system injecting Google Fonts `Newsreader` (editorial serif with italic emphasis) and `Plus Jakarta Sans`, Function Health numbered step cards (`01 / 02 / 03`), horizontal biomarker-style visual risk gauge (In-Range vs. Elevated Top 20% Capacity Tier), pill navigation, and warm alerts.
+    - `app/streamlit_app.py`: Revamped all 5 dashboard views (Executive Summary, Patient Risk Scoring, SHAP Interpretability, Fairness by Group, Model Comparison & Capacity).
+  - UI Hardening & Bug Fixes:
+    - Fixed markdown code block bug: removed leading whitespace from multiline HTML f-strings so Python-Markdown never parses HTML tags as `<pre><code>` code blocks.
+    - Fixed Streamlit icon ligature bug: protected `Material Symbols Rounded` icon fonts on `[data-testid*="Icon"]` and sidebar collapse controls, preventing icon ligatures (`keyboard_double_arrow_right`) from rendering as plain text.
+- **Key measured numbers:**
+  - Automated test suite: **16/16 tests passing** (`test_streamlit_pages_render` confirmed all 5 pages render with 0 exceptions).
+  - Code formatting & linting: **0 errors** across all 20 files via Ruff.
+  - Frozen ML metrics and test set lock remain 100% untouched and preserved.
+- **Commands run & results:**
+  - `pytest -v`: 16 passed in 17.85s.
+  - `ruff check app/ src/ tests/`: All checks passed.
+  - `ruff format --check app/ src/ tests/`: 20 files already formatted.
+- **Assumptions made:**
+  - Modern clinical AI interfaces benefit significantly from high-contrast editorial typography and clear, non-punitive capacity-tier visual gauges over raw uncalibrated probabilities.
+- **Open issues:** None. All features verified and synced to GitHub.
+
+
 
 
 

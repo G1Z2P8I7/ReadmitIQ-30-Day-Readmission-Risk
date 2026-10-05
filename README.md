@@ -105,7 +105,7 @@ Demographic attributes (Race, Gender, Age) are strictly excluded as model featur
 ## 🏗️ System Architecture & Repository Layout
 
 ```text
-├── .streamlit/config.toml       # Streamlit dark navy theme config
+├── .streamlit/config.toml       # Streamlit Function Health warm cream theme config
 ├── configs/                     # System configs
 │   ├── base.yaml                # Random seeds, paths, split ratios, capacity K, cost ratio
 │   ├── features.yaml            # Feature lists, imputation rules, categorical encoders
@@ -128,7 +128,7 @@ Demographic attributes (Race, Gender, Age) are strictly excluded as model featur
 ├── api/main.py                  # FastAPI REST service (/health, /predict, /explain)
 ├── app/
 │   ├── streamlit_app.py         # Multi-page interactive clinical decision support UI
-│   └── style.py                 # Glassmorphism styling system & HTML component helpers
+│   └── style.py                 # Function Health editorial styling system & component helpers
 ├── reports/                     # Audit artifacts & generated metrics
 │   ├── metrics.json             # Single source of truth for all quantitative claims
 │   ├── fairness_details.json    # Per-group audit statistics with bootstrap CIs
