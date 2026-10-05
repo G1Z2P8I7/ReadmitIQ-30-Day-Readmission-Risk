@@ -14,7 +14,7 @@ Running progress log tracking milestone delivery, commands executed, verificatio
 - [x] **M7: Fairness audit and mitigation**
 - [x] **M8: Final test evaluation (locked)**
 - [x] **M9: Engineering layer (API, Dashboard, Docker)**
-- [ ] **M10: Write-up and executive report**
+- [x] **M10: Write-up and executive report**
 
 ---
 
@@ -254,7 +254,25 @@ uff check src tests: Passed (0 errors).
   - `ruff check src tests api app`: Passed (0 errors).
 - **Assumptions made:**
   - Streamlit dashboard and FastAPI service use cached inference objects for sub-100ms response times.
-- **Open issues:** None. Proceeding autonomously to M10 (Executive Report, Readme, and Final Summary).
+- **Open issues:** None.
+
+---
+
+## Checkpoint 9: M10 Documentation, Executive Report, and Final Handoff Complete
+- **What was built:**
+  - `reports/executive_report.md`: Comprehensive clinical and technical report covering cohort flow, capacity-aware decision support, discrimination/calibration benchmark, SHAP feature drivers, and demographic fairness findings.
+  - `README.md`: Production-ready documentation citing exact frozen figures from `reports/metrics.json`, detailing architecture, reproducibility, CLI commands, and clinical governance disclaimers.
+  - `reports/FINAL_SUMMARY.md`: End-to-end handoff document containing complete milestone checklist, exact metric tables, decisions log, limitations, run instructions, and form-ready resume bullets.
+- **Key measured numbers:**
+  - All numbers in documentation and reports trace directly and strictly to `reports/metrics.json`.
+  - Zero placeholder values; zero fabricated clinical numbers.
+- **Commands run & results:**
+  - `pytest -v`: All 15 unit tests passed.
+  - `ruff check src tests api app`: All checks passed (0 errors).
+- **Assumptions made:**
+  - Project milestone delivery (M0 to M10) across Priority Tiers P0 to P3 is 100% complete and fully verified.
+- **Open issues:** None. All requirements fulfilled.
+
 
 
 
